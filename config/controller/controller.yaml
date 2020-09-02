@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: git-cert-shim
+  name: system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: git-cert-shim
+  labels:
+    app: git-cert-shim
+spec:
+  selector:
+    matchLabels:
+      app: git-cert-shim
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: git-cert-shim
+    spec:
+      containers:
+      - command:
+        - /git-cert-shim
+        args:
+        - --enable-leader-election
+        - --config-file-name="certificates.yaml"
+        - --default-issuer-name="digicert-issuer"
+        - --default-issuer-kind="DigicertIssuer"
+        - --default-issuer-group="certmanager.cloud.sap"
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: GITHUB_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: git-cert-shim
+              key: GITHUB_API_TOKEN
+        - name: GIT_REMOTE_URL
+          valueFrom:
+            secretKeyRef:
+              name: git-cert-shim
+              key: GIT_REMOTE_URL
+        image: git-cert-shim:latest
+        name: manager
+        resources:
+          limits:
+            cpu: 200m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+      terminationGracePeriodSeconds: 20

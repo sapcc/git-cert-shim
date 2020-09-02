@@ -1,0 +1,10 @@
+# Adds namespace to all resources.
+namespace: kube-system
+
+# Labels to add to all resources and selectors.
+commonLabels:
+  app: git-cert-shim
+
+bases:
+- rbac
+- controller
