@@ -60,7 +60,9 @@ docker-build:
 # Push the docker image
 docker-push: VERSION=$(shell cat VERSION)
 docker-push:
-	docker push ${IMG}:${VERSION}
+	docker push ${IMG}:${VERSION} && \
+    docker tag ${IMG}:${VERSION} ${IMG}:latest && \
+    docker push ${IMG}:latest
 
 git-push-tag: VERSION=$(shell cat VERSION)
 git-push-tag:

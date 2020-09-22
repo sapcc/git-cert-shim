@@ -1,5 +1,7 @@
 # git-cert-shim
 
+[![Image](https://img.shields.io/docker/v/sapcc/git-cert-shim/latest)](https://hub.docker.com/r/sapcc/git-cert-shim/tags)
+
 Automatic management of certificates not related to Kubernetes resources via a github repository.
 
 The controller watches the configured github repository for files containing certificate configurations and
