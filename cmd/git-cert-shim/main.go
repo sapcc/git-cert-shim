@@ -23,17 +23,16 @@ import (
 	"time"
 
 	certmanagerv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"k8s.io/apimachinery/pkg/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
 	"github.com/sapcc/git-cert-shim/controllers"
 	"github.com/sapcc/git-cert-shim/pkg/config"
 	"github.com/sapcc/git-cert-shim/pkg/git"
 	"github.com/sapcc/git-cert-shim/pkg/version"
-	"k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	// Load k8s auth plugins.
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	// +kubebuilder:scaffold:imports
 )
 

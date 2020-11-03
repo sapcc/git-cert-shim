@@ -5,8 +5,9 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/sapcc/git-cert-shim/pkg/util"
 	"gopkg.in/yaml.v3"
+
+	"github.com/sapcc/git-cert-shim/pkg/util"
 )
 
 type Certificate struct {

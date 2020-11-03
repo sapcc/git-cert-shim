@@ -26,11 +26,6 @@ import (
 	"github.com/go-logr/logr"
 	certmanagerv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
-	"github.com/sapcc/git-cert-shim/pkg/certificate"
-	"github.com/sapcc/git-cert-shim/pkg/config"
-	"github.com/sapcc/git-cert-shim/pkg/git"
-	"github.com/sapcc/git-cert-shim/pkg/k8sutils"
-	"github.com/sapcc/git-cert-shim/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -38,6 +33,12 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/sapcc/git-cert-shim/pkg/certificate"
+	"github.com/sapcc/git-cert-shim/pkg/config"
+	"github.com/sapcc/git-cert-shim/pkg/git"
+	"github.com/sapcc/git-cert-shim/pkg/k8sutils"
+	"github.com/sapcc/git-cert-shim/pkg/util"
 )
 
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificates,verbs=get;list;watch;create;update;patch;delete
@@ -46,12 +47,11 @@ type GitController struct {
 	ControllerOptions *config.ControllerOptions
 	GitOptions        *git.Options
 	Log               logr.Logger
-
-	client           client.Client
-	scheme           *runtime.Scheme
-	repositorySyncer *git.RepositorySyncer
-	queue            workqueue.RateLimitingInterface
-	wg               sync.WaitGroup
+	client            client.Client
+	scheme            *runtime.Scheme
+	repositorySyncer  *git.RepositorySyncer
+	queue             workqueue.RateLimitingInterface
+	wg                sync.WaitGroup
 }
 
 func (g *GitController) Start(stop <-chan struct{}) error {
@@ -65,7 +65,6 @@ func (g *GitController) Start(stop <-chan struct{}) error {
 	go wait.Until(g.runWorker, time.Second, stop)
 
 	g.requeueAll()
-
 	ticker := time.NewTicker(g.GitOptions.SyncPeriod)
 	go func() {
 		for {
