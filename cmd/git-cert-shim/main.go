@@ -65,11 +65,12 @@ func main() {
 	flag.BoolVar(&isPrintVersionAndExit, "version", false, "Print version and exit.")
 
 	flag.StringVar(&gitOpts.GithubToken, "github-api-token", "", "Github API token. Alternatively, provide via environment variable GITHUB_API_TOKEN.")
+	flag.StringVar(&gitOpts.GithubSSHPrivkeyFilename, "github-ssh-privkey", "", "Github SSH private key filename. Alternatively, provide via environment variable GITHUB_SSH_PRIVKEY.")
 	flag.StringVar(&gitOpts.AuthorName, "github-author-name", "certificate-bot", "The name of the author used for commit.")
 	flag.StringVar(&gitOpts.AuthorEmail, "github-author-email", "certificate-bot@sap.com", "The email of the author used for commits.")
 	flag.StringVar(&gitOpts.RemoteURL, "git-remote-url", "", "The remote URL of the github repository.")
 	flag.StringVar(&gitOpts.BranchName, "git-branch-name", "master", "The name of the git branch to synchronize with.")
-	flag.DurationVar(&gitOpts.SyncPeriod, "git-sync-period", 5*time.Minute, "The period in which synchronization with the git repository is guaranteed.")
+	flag.DurationVar(&gitOpts.SyncPeriod, "git-sync-period", 1*time.Hour, "The period in which synchronization with the git repository is guaranteed.")
 	flag.BoolVar(&gitOpts.IsEnsureEmptyDirectory, "ensure-empty-git-directory", true, "Ensure the creation of an empty directory for the git clone.")
 
 	flag.StringVar(&controllerOpts.Namespace, "namespace", "kube-system", "The namespace in which certificate request will be created. Is overwritten by the namespace this controller runs in.")

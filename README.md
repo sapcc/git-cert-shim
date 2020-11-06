@@ -1,7 +1,5 @@
 # git-cert-shim
 
-[![Image](https://img.shields.io/docker/v/sapcc/git-cert-shim/latest)](https://hub.docker.com/r/sapcc/git-cert-shim/tags)
-
 Automatic management of certificates not related to Kubernetes resources via a github repository.
 
 The controller watches the configured github repository for files containing certificate configurations and
@@ -17,9 +15,6 @@ Mandatory configuration:
 // The remote URL of the github repository.
 --git-remote-url
 
-// Github API token. Alternatively, provide via environment variable GITHUB_API_TOKEN.
---github-api-token
-
 // The group of the issuer used to sign certificate requests.
 --default-issuer-group string
 
@@ -32,6 +27,15 @@ Mandatory configuration:
 // Trigger renewal of the certificate if they would expire in less than the configured duration. 
 // *Warning*: Only allows min, hour.  (default 720h0m0s)
 --renew-certificates-before duration
+```
+
+And choose one authentication method:
+```
+// Github API token. Alternatively, provide via environment variable GITHUB_API_TOKEN.
+--github-api-token
+
+// Github SSH private key filename. Alternatively, provide via environment variable GITHUB_SSH_PRIVKEY.
+--github-ssh-privkey
 ```
 
 A `certificates.yaml` might look as follows

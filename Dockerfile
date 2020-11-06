@@ -24,6 +24,8 @@ COPY pkg/ pkg/
 RUN make build CGO_ENABLED=0
 
 FROM alpine:3.12.0
+LABEL source_repository="https://github.com/sapcc/git-cert-shim"
+
 WORKDIR /
 
 RUN apk --update add git less openssh && \
@@ -32,6 +34,9 @@ RUN apk --update add git less openssh && \
 
 # Install SAP CA certificate.
 RUN wget -O /usr/local/share/ca-certificates/SAP_Global_Root_CA.crt http://aia.pki.co.sap.com/aia/SAP%20Global%20Root%20CA.crt && update-ca-certificates
+
+COPY git-wrapper.sh /
+RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
 COPY --from=builder /workspace/bin/git-cert-shim .
 RUN ["/git-cert-shim", "--version"]
