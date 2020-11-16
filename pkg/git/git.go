@@ -84,8 +84,8 @@ func (g *Git) Commit(commitMessage string) error {
 	}
 
 	_, err := g.run(
-		"-g", fmt.Sprintf(`user.name="%s"`, g.AuthorName),
-		"-g", fmt.Sprintf(`user.email="%s"`, g.AuthorEmail),
+		"-c", fmt.Sprintf(`user.name="%s"`, g.AuthorName),
+		"-c", fmt.Sprintf(`user.email="%s"`, g.AuthorEmail),
 		"commit",
 		"--all",
 		"--author", fmt.Sprintf(`"%s <%s>"`, g.AuthorName, g.AuthorEmail),
