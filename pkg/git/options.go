@@ -51,6 +51,9 @@ type Options struct {
 
 	// SyncPeriod is the period in which synchronization with the git repository is guaranteed.
 	SyncPeriod time.Duration
+
+	// Do not push to remote repository
+	DryRun bool
 }
 
 func (o *Options) validate() error {

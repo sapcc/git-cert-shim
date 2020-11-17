@@ -18,6 +18,7 @@ type Certificate struct {
 
 func (c *Certificate) GetName() string {
 	commonName := strings.ReplaceAll(c.CommonName, ".", "-")
+	commonName = strings.ReplaceAll(commonName, "*", "wildcard")
 	return commonName
 }
 

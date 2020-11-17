@@ -43,7 +43,8 @@ A `certificates.yaml` might look as follows
 certificates:
   - cn: some.thing.tld
   - cn: foo.bar.tld
-    sans: baz.bar.tld
+    sans:
+      - baz.bar.tld
 ```
 
 The resulting files containing the certificate and private key will be named after the certificates common name, e.g. `some-thing-tld.pem`, `some-thing-tld-key.pem` and are stored in the same folder as the configuration.

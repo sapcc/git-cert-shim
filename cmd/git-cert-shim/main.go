@@ -23,6 +23,8 @@ import (
 	"time"
 
 	certmanagerv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	uber_zap "go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -56,6 +58,7 @@ func main() {
 		enableLeaderElection bool
 		gitOpts        git.Options
 		controllerOpts config.ControllerOptions
+		debug          bool
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
@@ -70,8 +73,9 @@ func main() {
 	flag.StringVar(&gitOpts.AuthorEmail, "github-author-email", "certificate-bot@sap.com", "The email of the author used for commits.")
 	flag.StringVar(&gitOpts.RemoteURL, "git-remote-url", "", "The remote URL of the github repository.")
 	flag.StringVar(&gitOpts.BranchName, "git-branch-name", "master", "The name of the git branch to synchronize with.")
-	flag.DurationVar(&gitOpts.SyncPeriod, "git-sync-period", 1*time.Hour, "The period in which synchronization with the git repository is guaranteed.")
+	flag.DurationVar(&gitOpts.SyncPeriod, "git-sync-period", 15*time.Minute, "The period in which synchronization with the git repository is guaranteed.")
 	flag.BoolVar(&gitOpts.IsEnsureEmptyDirectory, "ensure-empty-git-directory", true, "Ensure the creation of an empty directory for the git clone.")
+	flag.BoolVar(&gitOpts.DryRun, "dry-run", false, "Do not push to repository.")
 
 	flag.StringVar(&controllerOpts.Namespace, "namespace", "kube-system", "The namespace in which certificate request will be created. Is overwritten by the namespace this controller runs in.")
 	flag.StringVar(&controllerOpts.ConfigFileName, "config-file-name", "certificates.yaml", "The file containing the certificate configuration.")
@@ -80,13 +84,19 @@ func main() {
 	flag.StringVar(&controllerOpts.DefaultIssuer.Group, "default-issuer-group", "", "The group of the issuer used to sign certificate requests.")
 	flag.DurationVar(&controllerOpts.RenewCertificatesBefore, "renew-certificates-before", 720*time.Hour, "*Warning*: Only allows min, hour. Trigger renewal of the certificate if they would expire in less than the configured duration.")
 
+	flag.BoolVar(&debug, "debug", false, "Set debug log level.")
+
 	flag.Parse()
 	if isPrintVersionAndExit {
 		fmt.Println(version.Print(programName))
 		os.Exit(0)
 	}
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	level := uber_zap.NewAtomicLevelAt(zapcore.InfoLevel)
+	if debug {
+		level = uber_zap.NewAtomicLevelAt(zapcore.DebugLevel)
+	}
+	ctrl.SetLogger(zap.New(zap.UseDevMode(true), zap.Level(&level)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,

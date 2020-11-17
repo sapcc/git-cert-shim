@@ -33,7 +33,6 @@ func NewGit(opts *Options) (*Git, error) {
 	var cmd *command
 
 	if opts.GithubSSHPrivkeyFilename != "" {
-		//cmd, err = newCommand("ssh-agent", "sh", "-c", "ssh-add", opts.GithubSSHPrivkeyFilename, ";", "git", "-C", opts.AbsLocalPath)
 		cmd, err = newCommand("/git-wrapper.sh", opts.GithubSSHPrivkeyFilename, opts.AbsLocalPath)
 	} else {
 		cmd, err = newCommand("git", "-C", opts.AbsLocalPath)
@@ -64,13 +63,35 @@ func (g *Git) GetHEADCommitHash() (string, error) {
 	return strings.TrimSpace(res), nil
 }
 
+func (g *Git) GetRemoteHEADCommitHash() (string, error) {
+	res, err := g.run("ls-remote", "--heads", "-q")
+	if err != nil {
+		return "", errors.Wrap(err, "git ls-remote --heads -q failed")
+	}
+	return strings.TrimSpace(strings.Split(res, "\t")[0]), nil
+}
+
 // PullRebase pulls and rebases.
 func (g *Git) PullRebase() error {
-	_, err := g.run("pull", "--rebase")
+	g.run("rebase", "--abort")
+	_, err := g.run(
+		"-c", fmt.Sprintf(`user.name="%s"`, g.AuthorName),
+		"-c", fmt.Sprintf(`user.email="%s"`, g.AuthorEmail),
+		"pull",
+		"--rebase",
+	)
 	if err != nil {
 		return errors.Wrap(err, "git pull failed")
 	}
 	return nil
+}
+
+func (g *Git) Status() (string, error) {
+	res, err := g.run("status", "-s")
+	if err != nil {
+		return "", errors.Wrap(err, "git status -s failed")
+	}
+	return strings.TrimSpace(res), nil
 }
 
 func (g *Git) Add(files ...string) error {

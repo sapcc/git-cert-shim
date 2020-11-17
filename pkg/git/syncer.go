@@ -14,13 +14,14 @@ const remoteName = "origin"
 type RepositorySyncer struct {
 	logger     logr.Logger
 	gitCli     *Git
-	mtx        sync.RWMutex
+	mtx        *sync.Mutex
 	syncPeriod time.Duration
 	syncSoon   chan struct{}
 	hasSynced  bool
+	dryRun     bool
 }
 
-func NewRepositorySyncerAndInit(logger logr.Logger, opts *Options) (*RepositorySyncer, error) {
+func NewRepositorySyncerAndInit(logger logr.Logger, opts *Options, mtx *sync.Mutex) (*RepositorySyncer, error) {
 	git, err := NewGit(opts)
 	if err != nil {
 		return nil, err
@@ -29,10 +30,11 @@ func NewRepositorySyncerAndInit(logger logr.Logger, opts *Options) (*RepositoryS
 	r := &RepositorySyncer{
 		logger:     logger,
 		gitCli:     git,
-		mtx:        sync.RWMutex{},
+		mtx:        mtx,
 		syncPeriod: opts.SyncPeriod,
 		syncSoon:   make(chan struct{}, 1),
 		hasSynced:  false,
+		dryRun:     opts.DryRun,
 	}
 
 	if err := r.clone(); err != nil {
@@ -67,8 +69,14 @@ func (r *RepositorySyncer) Start(stop <-chan struct{}) error {
 }
 
 func (r *RepositorySyncer) AddFilesAndCommit(commitMessage string, files ...string) error {
-	r.mtx.Lock()
-	defer r.mtx.Unlock()
+	res, err := r.gitCli.Status()
+	if err != nil {
+		return err
+	}
+	if res == "" {
+		r.logger.V(1).Info("No changes to commit.")
+		return nil
+	}
 
 	if err := r.gitCli.Add(files...); err != nil {
 		return err
@@ -116,12 +124,8 @@ func (r *RepositorySyncer) syncWithRetry() error {
 			return isErrFailedToPushSomeRefs(err)
 		},
 		func() error {
-			oldHeadCommitHash, err := r.gitCli.GetHEADCommitHash()
+			remoteHeadCommitHash, err := r.gitCli.GetRemoteHEADCommitHash()
 			if err != nil {
-				return err
-			}
-
-			if err := r.gitCli.Fetch(); err != nil {
 				return err
 			}
 
@@ -134,13 +138,22 @@ func (r *RepositorySyncer) syncWithRetry() error {
 				return err
 			}
 
+			r.logger.V(1).Info("Remote head commit hash, current head commit hash", remoteHeadCommitHash, curHeadCommitHash)
+
 			// No changes. We're done.
-			if oldHeadCommitHash == curHeadCommitHash {
+			if remoteHeadCommitHash == curHeadCommitHash {
 				return nil
 			}
 
-			err = r.gitCli.Push()
-			return err
+			if !r.dryRun {
+				r.logger.V(1).Info("Pushing changes to repository.")
+				err = r.gitCli.Push()
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
 		})
 
 	return err
