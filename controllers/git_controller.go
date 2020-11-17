@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -52,6 +53,7 @@ type GitController struct {
 	repositorySyncer  *git.RepositorySyncer
 	queue             workqueue.RateLimitingInterface
 	wg                sync.WaitGroup
+	mtx               sync.Mutex
 }
 
 func (g *GitController) Start(stop <-chan struct{}) error {
@@ -159,29 +161,26 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 		return err
 	}
 
+	// Wait for syncer to finish
+	g.mtx.Lock()
+	defer g.mtx.Unlock()
+
 	certFileName := filepath.Join(cert.OutFolder, fmt.Sprintf("%s.pem", cert.CommonName))
+	certFileName = strings.ReplaceAll(certFileName, "*", "wildcard")
 	if err := util.WriteToFileIfNotEmpty(certFileName, certByte); err != nil {
 		return err
 	}
 
 	keyFileName := filepath.Join(cert.OutFolder, fmt.Sprintf("%s-key.pem", cert.CommonName))
+	keyFileName = strings.ReplaceAll(keyFileName, "*", "wildcard")
 	if err := util.WriteToFileIfNotEmpty(keyFileName, keyByte); err != nil {
 		return err
 	}
 
-	certRelPath, err := filepath.Rel(cert.OutFolder, certFileName)
-	if err != nil {
-		return err
-	}
-
-	keyRelPath, err := filepath.Rel(cert.OutFolder, keyFileName)
-	if err != nil {
-		return err
-	}
-
 	err = g.repositorySyncer.AddFilesAndCommit(
-		fmt.Sprintf("added certificate for %s", cert.CommonName), certRelPath, keyRelPath,
+		fmt.Sprintf("added certificate for %s", cert.CommonName), certFileName, keyFileName,
 	)
+
 	return err
 }
 
@@ -224,7 +223,8 @@ func (g *GitController) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	repoSyncer, err := git.NewRepositorySyncerAndInit(ctrl.Log.WithName("gitsyncer"), g.GitOptions)
+	g.mtx = sync.Mutex{}
+	repoSyncer, err := git.NewRepositorySyncerAndInit(ctrl.Log.WithName("gitsyncer"), g.GitOptions, &g.mtx)
 	if err != nil {
 		return err
 	}
