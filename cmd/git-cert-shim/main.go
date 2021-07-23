@@ -19,6 +19,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"time"
 
@@ -30,6 +32,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/sapcc/git-cert-shim/controllers"
 	"github.com/sapcc/git-cert-shim/pkg/config"
@@ -53,6 +56,7 @@ func init() {
 
 func main() {
 	var (
+		profilerAddr,
 		metricsAddr string
 		isPrintVersionAndExit,
 		enableLeaderElection bool
@@ -61,6 +65,7 @@ func main() {
 		debug          bool
 	)
 
+	flag.StringVar(&profilerAddr, "profiler-addr", "localhost:6060", "The address to expose pprof profiler on.")
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
@@ -107,6 +112,22 @@ func main() {
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
+		os.Exit(1)
+	}
+
+	if err := mgr.Add(manager.RunnableFunc(func(stop <-chan struct{}) error {
+		server := &http.Server{Addr: profilerAddr}
+		go func() {
+			<-stop
+			server.Close()
+		}()
+		setupLog.Info("Starting /debug/pprof server", "listen", profilerAddr)
+		if err := server.ListenAndServe(); err != http.ErrServerClosed {
+			return err
+		}
+		return nil
+	})); err != nil {
+		setupLog.Error(err, "unable to create pprof profiler")
 		os.Exit(1)
 	}
 
