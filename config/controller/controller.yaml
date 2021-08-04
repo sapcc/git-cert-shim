@@ -20,6 +20,9 @@ spec:
     metadata:
       labels:
         app: git-cert-shim
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/targets: "kubernetes"
     spec:
       containers:
       - command:
@@ -54,4 +57,7 @@ spec:
           requests:
             cpu: 100m
             memory: 20Mi
+        ports:
+          - name: metrics
+            containerPort: 8080
       terminationGracePeriodSeconds: 20
