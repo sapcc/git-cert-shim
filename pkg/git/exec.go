@@ -25,6 +25,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -34,14 +35,15 @@ var errCmdNotInstalled = errors.New("command not installed")
 type command struct {
 	cmd         string
 	defaultArgs []string
+	timeout     time.Duration
 }
 
 func newCommand(cmd string, defaultArgs ...string) (*command, error) {
 	c := &command{
 		cmd:         cmd,
+		timeout:     1 * time.Minute,
 		defaultArgs: defaultArgs,
 	}
-
 	return c, c.verify()
 }
 
@@ -64,9 +66,23 @@ func (c *command) run(args ...string) (string, error) {
 		return "", errors.Wrap(err, strings.TrimSpace(stdErr.String()))
 	}
 
-	if err := cmd.Wait(); err != nil {
-		return "", errors.Wrap(err, strings.TrimSpace(stdErr.String()))
+	done := make(chan error)
+	go func() { done <- cmd.Wait() }()
+
+	timeout := time.After(c.timeout)
+	select {
+	case <-timeout:
+		fmt.Println("command timed out: ", cmd.String())
+		if err := cmd.Process.Kill(); err != nil {
+			fmt.Println("failed to kill command: ", err.Error())
+		}
+	case err := <-done:
+		fmt.Println("Output:", strings.TrimSpace(stdErr.String()))
+		if err != nil {
+			fmt.Println("Non-zero exit code:", err)
+		}
 	}
+
 	return strings.TrimSpace(stdOut.String()), nil
 }
 

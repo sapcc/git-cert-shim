@@ -49,6 +49,8 @@ func (r *RepositorySyncer) Start(stop <-chan struct{}) error {
 	defer close(r.syncSoon)
 
 	ticker := time.NewTicker(r.syncPeriod)
+	defer ticker.Stop()
+
 	go func() {
 		for {
 			select {
@@ -59,7 +61,7 @@ func (r *RepositorySyncer) Start(stop <-chan struct{}) error {
 				err := r.syncWithRetry()
 				r.handleSyncError(err)
 			case <-stop:
-				ticker.Stop()
+				return
 			}
 		}
 	}()
