@@ -37,21 +37,23 @@ func NewRepositorySyncerAndInit(logger logr.Logger, opts *Options, mtx *sync.Mut
 		dryRun:     opts.DryRun,
 	}
 
+	start := time.Now()
+	logger.Info("cloning repository. this might take a while..")
 	if err := r.clone(); err != nil {
 		return nil, err
 	}
 
-	logger.Info("successfully initialized repository syncer", "path", opts.AbsLocalPath)
+	logger.Info("successfully initialized repository syncer", "path", opts.AbsLocalPath, "took", time.Since(start).String())
 	return r, nil
 }
 
 func (r *RepositorySyncer) Start(stop <-chan struct{}) error {
 	defer close(r.syncSoon)
 
-	ticker := time.NewTicker(r.syncPeriod)
-	defer ticker.Stop()
-
 	go func() {
+		ticker := time.NewTicker(r.syncPeriod)
+		defer ticker.Stop()
+
 		for {
 			select {
 			case <-r.syncSoon:
@@ -132,6 +134,7 @@ func (r *RepositorySyncer) syncWithRetry() error {
 			}
 
 			if err := r.gitCli.PullRebase(); err != nil {
+				gitSyncErrorTotal.WithLabelValues("pull").Inc()
 				return err
 			}
 
@@ -149,14 +152,13 @@ func (r *RepositorySyncer) syncWithRetry() error {
 
 			if !r.dryRun {
 				r.logger.V(1).Info("Pushing changes to repository.")
-				err = r.gitCli.Push()
-				if err != nil {
+				if err := r.gitCli.Push(); err != nil {
+					gitSyncErrorTotal.WithLabelValues("push").Inc()
 					return err
 				}
 			}
 
 			return nil
 		})
-
 	return err
 }

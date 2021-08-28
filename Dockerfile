@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.13 as builder
+FROM golang:1.16 as builder
 
 WORKDIR /workspace
 
@@ -23,7 +23,7 @@ COPY pkg/ pkg/
 # Build the controller.
 RUN make build CGO_ENABLED=0
 
-FROM alpine:3.12.0
+FROM alpine:3.14.2
 LABEL source_repository="https://github.com/sapcc/git-cert-shim"
 
 WORKDIR /
@@ -32,10 +32,11 @@ RUN apk --update add git less openssh && \
     rm -rf /var/lib/apt/lists/* && \
     rm /var/cache/apk/* && git --version
 
+RUN mkdir -p /root/.ssh
+
 # Install SAP CA certificate.
 RUN wget -O /usr/local/share/ca-certificates/SAP_Global_Root_CA.crt http://aia.pki.co.sap.com/aia/SAP%20Global%20Root%20CA.crt && update-ca-certificates
-
-COPY git-wrapper.sh /
+RUN ssh-keyscan github.wdf.sap.corp >> /root/.ssh/known_hosts
 RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
 COPY --from=builder /workspace/bin/git-cert-shim .

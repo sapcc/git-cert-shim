@@ -1,7 +1,7 @@
 package git
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,16 +11,16 @@ import (
 )
 
 const (
-	gitRemoteURLEnvVarkey = "GIT_REMOTE_URL"
-	ghTokenEnvVarKey      = "GITHUB_API_TOKEN"
-	ghSshPrivkeyEnvVarKey = "GITHUB_SSH_PRIVKEY"
+	gitRemoteURLEnvVarkey      = "GIT_REMOTE_URL"
+	gitTokenEnvVarKey          = "GIT_API_TOKEN"
+	gitSSHPrivkeyFileEnvVarKey = "GIT_SSH_PRIVKEY_FILE"
 )
 
 var (
-	errGitNoRemote           = errors.New("git remote has no remote configured")
-	errGithubNoAuth          = errors.New("No authentication method found")
-	errGithubNoValidURL      = errors.New("No valid Github URL given")
-	tmpSshPrivateKeyFilename = "/git-cert-shim-ssh-privatekey"
+	errGitNoRemote        = errors.New("git remote has no remote configured")
+	errGithubNoAuth       = errors.New("No authentication method found")
+	errGithubNoValidURL   = errors.New("No valid Github URL given")
+	sshPrivateKeyFilename = "/root/.ssh/id_rsa"
 )
 
 type Options struct {
@@ -57,26 +57,11 @@ type Options struct {
 }
 
 func (o *Options) validate() error {
-	if o.GithubToken == "" && o.GithubSSHPrivkeyFilename == "" {
-		v, ok1 := os.LookupEnv(ghTokenEnvVarKey)
-		if ok1 && v != "" {
-			o.GithubToken = v
-		}
-
-		v, ok2 := os.LookupEnv(ghSshPrivkeyEnvVarKey)
-		if ok2 && v != "" {
-			err := ioutil.WriteFile(tmpSshPrivateKeyFilename, []byte(v), 0600)
-			if err != nil {
-				return err
-			}
-			o.GithubSSHPrivkeyFilename = tmpSshPrivateKeyFilename
-		}
-
-		if o.GithubToken == "" && o.GithubSSHPrivkeyFilename == "" {
-			return errGithubNoAuth
-		}
+	if err := o.validateAuth(); err != nil {
+		return err
 	}
 
+	// Validate remote URL.
 	if o.RemoteURL == "" {
 		v, ok := os.LookupEnv(gitRemoteURLEnvVarkey)
 		if !ok {
@@ -99,6 +84,51 @@ func (o *Options) validate() error {
 		tmpDir = strings.ReplaceAll(tmpDir, ".", "_")
 		o.AbsLocalPath = filepath.Join(os.TempDir(), tmpDir)
 	}
-
 	return nil
+}
+
+func (o *Options) validateAuth() error {
+	// Attempt to read token from env if unset.
+	if ghToken, ok := os.LookupEnv(gitTokenEnvVarKey); ok {
+		o.GithubToken = ghToken
+	}
+	if o.GithubToken != "" {
+		fmt.Printf("Using %s from environment for authentication.\n", gitTokenEnvVarKey)
+		return nil
+	}
+
+	// Attempt to read private key from given file and copy to default location.
+	if gitKeyFile, ok := os.LookupEnv(gitSSHPrivkeyFileEnvVarKey); ok {
+		fmt.Printf("Using %s from environment to load private key for authentication.\n", gitSSHPrivkeyFileEnvVarKey)
+		if err := checkFileExistsAndIsNotEmpty(gitKeyFile); err != nil {
+			return err
+		}
+		if err := copyFile(gitKeyFile, sshPrivateKeyFilename); err != nil {
+			return err
+		}
+	}
+
+	o.GithubSSHPrivkeyFilename = sshPrivateKeyFilename
+	err := checkFileExistsAndIsNotEmpty(sshPrivateKeyFilename)
+	return err
+}
+
+func checkFileExistsAndIsNotEmpty(filename string) error {
+	fileByte, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	if len(fileByte) == 0 {
+		return fmt.Errorf("file %s is empty", filename)
+	}
+	return nil
+}
+
+func copyFile(src, target string) error {
+	srcByte, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(target, srcByte, 0600)
+	return err
 }

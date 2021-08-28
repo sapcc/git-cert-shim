@@ -8,12 +8,16 @@ resources:
 - controller.yaml
 
 secretGenerator:
-- literals:
-  - GIT_REMOTE_URL="https://github.com/unkown.git"
-  - GITHUB_API_TOKEN="unknown"
-  name: git-cert-shim
+- name: git-cert-shim
+  literals:
+  - GIT_REMOTE_URL="git@github.com:or/some.git"
+  - GIT_API_TOKEN=""
+  # Uncomment the following when using SSH.
+  #- GIT_SSH_PRIVKEY_FILE="/git-cert-shim.key"
+  #files:
+  #- git-cert-shim.key=key.yaml
 
 images:
 - name: git-cert-shim
   newName: sapcc/git-cert-shim
-  newTag: v0.0.4
+  newTag: v1.0.0

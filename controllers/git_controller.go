@@ -43,6 +43,7 @@ import (
 )
 
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificates,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=configmaps;secrets,verbs=create;get;list;update;patch;watch;delete
 
 type GitController struct {
 	ControllerOptions *config.ControllerOptions
@@ -67,15 +68,16 @@ func (g *GitController) Start(stop <-chan struct{}) error {
 	go wait.Until(g.runWorker, time.Second, stop)
 
 	g.requeueAll()
-	ticker := time.NewTicker(g.GitOptions.SyncPeriod)
 	go func() {
+		ticker := time.NewTicker(g.GitOptions.SyncPeriod)
+		defer ticker.Stop()
+
 		for {
 			select {
 			case <-ticker.C:
 				g.requeueAll()
 				g.Log.Info("requeued all certificates", "syncPeriod", g.GitOptions.SyncPeriod)
 			case <-stop:
-				ticker.Stop()
 				return
 			}
 		}
@@ -129,7 +131,7 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 	ctx := context.Background()
 	logger := g.Log.WithValues("host", cert.CommonName)
 
-	logger.Info("ensuring certificate exists in kubernetes", "namespace", g.ControllerOptions.Namespace, "name", cert.GetName())
+	logger.Info("ensuring certificate exists in cluster", "namespace", g.ControllerOptions.Namespace, "name", cert.GetName())
 	c, err := k8sutils.EnsureCertificate(ctx, g.client, g.ControllerOptions.Namespace, cert.GetName(), func(c *certmanagerv1alpha2.Certificate) *certmanagerv1alpha2.Certificate {
 		c.Spec.IssuerRef = g.ControllerOptions.DefaultIssuer
 		c.Spec.CommonName = cert.CommonName
@@ -180,7 +182,6 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 	err = g.repositorySyncer.AddFilesAndCommit(
 		fmt.Sprintf("added certificate for %s", cert.CommonName), certFileName, keyFileName,
 	)
-
 	return err
 }
 
@@ -239,6 +240,8 @@ func (g *GitController) SetupWithManager(mgr ctrl.Manager) error {
 	g.queue = workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(30*time.Second, 600*time.Second))
 	g.ControllerOptions.Namespace = util.GetEnv("NAMESPACE", g.ControllerOptions.Namespace)
 
-	err = mgr.Add(g)
-	return err
+	if err := mgr.Add(g); err != nil {
+		return err
+	}
+	return nil
 }

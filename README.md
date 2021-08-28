@@ -1,15 +1,17 @@
 # git-cert-shim
 
-Automatic management of certificates not related to Kubernetes resources via a github repository.
+The git-cert-shim extends the [cert-manager](https://github.com/jetstack/cert-manager) and enables 
+automating management of certificates configured via a Github repository.
 
-The controller watches the configured github repository for files containing certificate configurations and
-creates cert-manager resources in the current Kubernetes cluster. Once the certificate was issued or was renewed, it is pushed to the github repository.
+The controller watches the configured Github repository for files containing certificate configurations and
+manages [cert-manager resources](https://cert-manager.io/docs/usage/certificate) in the current Kubernetes cluster.  
+Once the certificate was issued or renewed, it is kept in sync with the github repository.
 
 ## Usage & Configuration
 
 Mandatory configuration:
 ```
-// The file containing the certificate configuration. (default "certificates.yaml")
+// The file containing the certificate configuration. (default "git-cert-shim.yaml")
 --config-file-name
 
 // The remote URL of the github repository.
@@ -31,14 +33,14 @@ Mandatory configuration:
 
 And choose one authentication method:
 ```
-// Github API token. Alternatively, provide via environment variable GITHUB_API_TOKEN.
---github-api-token
+// Github API token. Alternatively, provide via environment variable GIT_API_TOKEN.
+--git-api-token
 
-// Github SSH private key filename. Alternatively, provide via environment variable GITHUB_SSH_PRIVKEY.
---github-ssh-privkey
+// Github SSH private key filename. Alternatively, provide via environment variable GIT_SSH_PRIVKEY_FILE.
+--git-ssh-privkey-file
 ```
 
-A `certificates.yaml` might look as follows
+A `git-cert-shim.yaml` might look as follows
 ```
 certificates:
   - cn: some.thing.tld
@@ -48,3 +50,8 @@ certificates:
 ```
 
 The resulting files containing the certificate and private key will be named after the certificates common name, e.g. `some-thing-tld.pem`, `some-thing-tld-key.pem` and are stored in the same folder as the configuration.
+
+# Installation
+
+See the provided [kustomize base](config) and provide the required secrets.  
+Run `make install` to deploy the git-cert-shim to the current cluster.

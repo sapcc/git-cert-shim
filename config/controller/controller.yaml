@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   labels:
     app: git-cert-shim
-  name: system
+  name: git-cert-shim
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,39 +25,55 @@ spec:
         prometheus.io/targets: "kubernetes"
     spec:
       containers:
-      - command:
-        - /git-cert-shim
-        args:
-        - --enable-leader-election
-        - --config-file-name="certificates.yaml"
-        - --default-issuer-name="digicert-issuer"
-        - --default-issuer-kind="DigicertIssuer"
-        - --default-issuer-group="certmanager.cloud.sap"
-        env:
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: GITHUB_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: git-cert-shim
-              key: GITHUB_API_TOKEN
-        - name: GIT_REMOTE_URL
-          valueFrom:
-            secretKeyRef:
-              name: git-cert-shim
-              key: GIT_REMOTE_URL
-        image: git-cert-shim:latest
-        name: manager
-        resources:
-          limits:
-            cpu: 200m
-            memory: 100Mi
-          requests:
-            cpu: 100m
-            memory: 20Mi
-        ports:
-          - name: metrics
-            containerPort: 8080
+        - command:
+            - /git-cert-shim
+          args:
+            - --enable-leader-election
+            - --default-issuer-name="digicert-issuer"
+            - --default-issuer-kind="DigicertIssuer"
+            - --default-issuer-group="certmanager.cloud.sap"
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: GIT_REMOTE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: git-cert-shim
+                  key: GIT_REMOTE_URL
+            - name: GIT_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: git-cert-shim
+                  key: GIT_API_TOKEN
+                  optional: true
+            - name: GIT_SSH_PRIVKEY_FILE
+              valueFrom:
+                secretKeyRef:
+                  name: git-cert-shim
+                  key: GIT_SSH_PRIVKEY_FILE
+                  optional: true
+          image: git-cert-shim:latest
+          imagePullPolicy: Always
+          name: manager
+          resources:
+            limits:
+              cpu: 200m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 20Mi
+          ports:
+            - name: metrics
+              containerPort: 8080
+          volumeMounts:
+            - name: git-cert-shim
+              mountPath: /git-cert-shim.key
+              subPath: git-cert-shim.key
+              readOnly: true
+      volumes:
+        - name: git-cert-shim
+          secret:
+            secretName: git-cert-shim
       terminationGracePeriodSeconds: 20

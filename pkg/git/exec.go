@@ -40,8 +40,9 @@ type command struct {
 
 func newCommand(cmd string, defaultArgs ...string) (*command, error) {
 	c := &command{
-		cmd:         cmd,
-		timeout:     1 * time.Minute,
+		cmd: cmd,
+		// Initial clone might take a while.
+		timeout:     10 * time.Minute,
 		defaultArgs: defaultArgs,
 	}
 	return c, c.verify()
@@ -62,6 +63,7 @@ func (c *command) run(args ...string) (string, error) {
 	cmd.Stdout = &stdOut
 	cmd.Stderr = &stdErr
 
+	start := time.Now()
 	if err := cmd.Start(); err != nil {
 		return "", errors.Wrap(err, strings.TrimSpace(stdErr.String()))
 	}
@@ -72,17 +74,19 @@ func (c *command) run(args ...string) (string, error) {
 	timeout := time.After(c.timeout)
 	select {
 	case <-timeout:
-		fmt.Println("command timed out: ", cmd.String())
 		if err := cmd.Process.Kill(); err != nil {
 			fmt.Println("failed to kill command: ", err.Error())
+			return "", err
 		}
+		return "", fmt.Errorf("command timed out after %s: %s\n", time.Since(start).String(), cmd.String())
 	case err := <-done:
-		fmt.Println("Output:", strings.TrimSpace(stdErr.String()))
+		if stdErr.Len() > 0 {
+			fmt.Println("Output:", strings.TrimSpace(stdErr.String()))
+		}
 		if err != nil {
-			fmt.Println("Non-zero exit code:", err)
+			return "", errors.Wrapf(err, "command returned non-zero exit code: %s", cmd.String())
 		}
 	}
-
 	return strings.TrimSpace(stdOut.String()), nil
 }
 

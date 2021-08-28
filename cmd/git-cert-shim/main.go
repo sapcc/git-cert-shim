@@ -72,8 +72,8 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&isPrintVersionAndExit, "version", false, "Print version and exit.")
 
-	flag.StringVar(&gitOpts.GithubToken, "github-api-token", "", "Github API token. Alternatively, provide via environment variable GITHUB_API_TOKEN.")
-	flag.StringVar(&gitOpts.GithubSSHPrivkeyFilename, "github-ssh-privkey", "", "Github SSH private key filename. Alternatively, provide via environment variable GITHUB_SSH_PRIVKEY.")
+	flag.StringVar(&gitOpts.GithubToken, "github-api-token", "", "Github API token. Alternatively, provide via environment variable GIT_API_TOKEN.")
+	flag.StringVar(&gitOpts.GithubSSHPrivkeyFilename, "github-ssh-privkey-file", "", "Github SSH private key filename. Alternatively, provide via environment variable GIT_SSH_PRIVKEY_FILE.")
 	flag.StringVar(&gitOpts.AuthorName, "github-author-name", "certificate-bot", "The name of the author used for commit.")
 	flag.StringVar(&gitOpts.AuthorEmail, "github-author-email", "certificate-bot@sap.com", "The email of the author used for commits.")
 	flag.StringVar(&gitOpts.RemoteURL, "git-remote-url", "", "The remote URL of the github repository.")
@@ -83,7 +83,7 @@ func main() {
 	flag.BoolVar(&gitOpts.DryRun, "dry-run", false, "Do not push to repository.")
 
 	flag.StringVar(&controllerOpts.Namespace, "namespace", "kube-system", "The namespace in which certificate request will be created. Is overwritten by the namespace this controller runs in.")
-	flag.StringVar(&controllerOpts.ConfigFileName, "config-file-name", "certificates.yaml", "The file containing the certificate configuration.")
+	flag.StringVar(&controllerOpts.ConfigFileName, "config-file-name", "git-cert-shim.yaml", "The file containing the certificate configuration.")
 	flag.StringVar(&controllerOpts.DefaultIssuer.Name, "default-issuer-name", "", "The name of the issuer used to sign certificate requests.")
 	flag.StringVar(&controllerOpts.DefaultIssuer.Kind, "default-issuer-kind", "", "The kind of the issuer used to sign certificate requests.")
 	flag.StringVar(&controllerOpts.DefaultIssuer.Group, "default-issuer-group", "", "The group of the issuer used to sign certificate requests.")

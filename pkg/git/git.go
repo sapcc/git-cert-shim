@@ -16,8 +16,6 @@ type Git struct {
 }
 
 func NewGit(opts *Options) (*Git, error) {
-	var err error
-
 	if err := opts.validate(); err != nil {
 		return nil, err
 	}
@@ -30,14 +28,7 @@ func NewGit(opts *Options) (*Git, error) {
 		return nil, errors.Wrapf(err, "failed to get or create path %s", opts.AbsLocalPath)
 	}
 
-	var cmd *command
-
-	if opts.GithubSSHPrivkeyFilename != "" {
-		cmd, err = newCommand("/git-wrapper.sh", opts.GithubSSHPrivkeyFilename, opts.AbsLocalPath)
-	} else {
-		cmd, err = newCommand("git", "-C", opts.AbsLocalPath)
-	}
-
+	cmd, err := newCommand("git", "-C", opts.AbsLocalPath)
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +150,6 @@ func (g *Git) getPushURL() (string, error) {
 		remote = strings.TrimPrefix(remote, "https://")
 		return fmt.Sprintf("https://%s:%s@%s", g.AuthorName, g.GithubToken, remote), nil
 	}
-
-	// Use ssh
 	return remote, nil
 }
 
