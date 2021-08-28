@@ -8,10 +8,10 @@ resources:
 - controller.yaml
 
 secretGenerator:
-- name: git-cert-shim
-  literals:
+- literals:
   - GIT_REMOTE_URL="git@github.com:or/some.git"
   - GIT_API_TOKEN=""
+  name: git-cert-shim
   # Uncomment the following when using SSH.
   #- GIT_SSH_PRIVKEY_FILE="/git-cert-shim.key"
   #files:
