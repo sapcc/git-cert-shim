@@ -6,6 +6,7 @@ generatorOptions:
 
 resources:
 - controller.yaml
+- vpa.yaml
 
 secretGenerator:
 - literals:

@@ -29,9 +29,9 @@ spec:
             - /git-cert-shim
           args:
             - --enable-leader-election
-            - --default-issuer-name="digicert-issuer"
-            - --default-issuer-kind="DigicertIssuer"
-            - --default-issuer-group="certmanager.cloud.sap"
+            - --default-issuer-name=digicert-issuer
+            - --default-issuer-kind=DigicertIssuer
+            - --default-issuer-group=certmanager.cloud.sap
           env:
             - name: NAMESPACE
               valueFrom:
