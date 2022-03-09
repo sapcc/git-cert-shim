@@ -34,7 +34,7 @@ run: generate fmt vet manifests
 deploy: VERSION=$(shell cat VERSION)
 deploy: manifests
 	cd config/controller && kustomize edit set image git-cert-shim=${IMG}:${VERSION}
-	kustomize build config/default | kubectl apply -f -
+	kustomize build config | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
