@@ -2,12 +2,11 @@ package certificate
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
-
-	"github.com/sapcc/git-cert-shim/pkg/util"
 )
 
 type Certificate struct {
@@ -26,8 +25,8 @@ func (c *Certificate) GetSecretName() string {
 	return fmt.Sprintf("tls-%s", c.GetName())
 }
 
-func ReadCertificateConfig(filepath string) ([]*Certificate, error) {
-	fileByte, err := ioutil.ReadFile(filepath)
+func ReadCertificateConfig(filePath string) ([]*Certificate, error) {
+	fileByte, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -47,11 +46,7 @@ func ReadCertificateConfig(filepath string) ([]*Certificate, error) {
 		certs[idx].SANS = checkSANs(c.CommonName, c.SANS)
 
 		// Remember where to store the certificate and key.
-		dirPath, err := util.GetDirPath(filepath)
-		if err != nil {
-			return nil, err
-		}
-		certs[idx].OutFolder = dirPath
+		certs[idx].OutFolder = filepath.Dir(filePath)
 	}
 
 	return certs, nil
