@@ -80,7 +80,8 @@ func main() {
 	flag.StringVar(&gitOpts.BranchName, "git-branch-name", "master", "The name of the git branch to synchronize with.")
 	flag.DurationVar(&gitOpts.SyncPeriod, "git-sync-period", 15*time.Minute, "The period in which synchronization with the git repository is guaranteed.")
 	flag.BoolVar(&gitOpts.IsEnsureEmptyDirectory, "ensure-empty-git-directory", true, "Ensure the creation of an empty directory for the git clone.")
-	flag.BoolVar(&gitOpts.DryRun, "dry-run", false, "Do not push to repository.")
+	flag.BoolVar(&gitOpts.PushCertificates, "git-push-certs", true, "Whether to write certificates into the Git repository. Set to false if you want to push to Vault only.")
+	flag.BoolVar(&gitOpts.DryRun, "dry-run", false, "Write certificates into local Git clone, but do not push them.")
 
 	flag.StringVar(&controllerOpts.Namespace, "namespace", "kube-system", "The namespace in which certificate request will be created. Is overwritten by the namespace this controller runs in.")
 	flag.StringVar(&controllerOpts.ConfigFileName, "config-file-name", "git-cert-shim.yaml", "The file containing the certificate configuration.")
