@@ -33,6 +33,7 @@ run: generate fmt vet manifests
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: VERSION=$(shell cat VERSION)
 deploy: manifests
+	@if [ ! -f deploy-with-kustomize ]; then echo "ERROR: The deployment in CCloud is now managed with Helm! Refusing to deploy unless you 'touch ./deploy-with-kustomize'."; false; fi
 	cd config/controller && kustomize edit set image git-cert-shim=${IMG}:${VERSION}
 	kustomize build config | kubectl apply -f -
 
