@@ -1,5 +1,5 @@
 # Image URL to use all building/pushing image targets
-IMG ?= sapcc/git-cert-shim
+IMG ?= keppel.eu-de-1.cloud.sap/ccloud/git-cert-shim
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
