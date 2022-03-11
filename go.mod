@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/go-logr/logr v0.1.0
+	github.com/hashicorp/vault/api v1.0.4
 	github.com/jetstack/cert-manager v0.16.1
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1

@@ -40,6 +40,7 @@ import (
 	"github.com/sapcc/git-cert-shim/pkg/git"
 	"github.com/sapcc/git-cert-shim/pkg/k8sutils"
 	"github.com/sapcc/git-cert-shim/pkg/util"
+	"github.com/sapcc/git-cert-shim/pkg/vault"
 )
 
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificates,verbs=get;list;watch;create;update;patch;delete
@@ -48,6 +49,7 @@ import (
 type GitController struct {
 	ControllerOptions *config.ControllerOptions
 	GitOptions        *git.Options
+	VaultClient       *vault.Client
 	Log               logr.Logger
 	client            client.Client
 	scheme            *runtime.Scheme
@@ -163,26 +165,44 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 		return err
 	}
 
-	// Wait for syncer to finish
-	g.mtx.Lock()
-	defer g.mtx.Unlock()
-
-	certFileName := filepath.Join(cert.OutFolder, fmt.Sprintf("%s.pem", cert.CommonName))
-	certFileName = strings.ReplaceAll(certFileName, "*", "wildcard")
-	if err := util.WriteToFileIfNotEmpty(certFileName, certByte); err != nil {
-		return err
+	if g.VaultClient != nil && g.VaultClient.Options.PushCertificates {
+		err := g.VaultClient.UpdateCertificate(vault.CertificateData{
+			VaultPath: cert.VaultPath,
+			CertBytes: certByte,
+			KeyBytes:  keyByte,
+		})
+		if err != nil {
+			logger.Error(err, "failed to write certificate to Vault", "namespace", g.ControllerOptions.Namespace, "name", cert.GetSecretName())
+			return err
+		}
 	}
 
-	keyFileName := filepath.Join(cert.OutFolder, fmt.Sprintf("%s-key.pem", cert.CommonName))
-	keyFileName = strings.ReplaceAll(keyFileName, "*", "wildcard")
-	if err := util.WriteToFileIfNotEmpty(keyFileName, keyByte); err != nil {
-		return err
+	if g.GitOptions.PushCertificates {
+		// Wait for syncer to finish
+		g.mtx.Lock()
+		defer g.mtx.Unlock()
+
+		certFileName := filepath.Join(cert.OutFolder, fmt.Sprintf("%s.pem", cert.CommonName))
+		certFileName = strings.ReplaceAll(certFileName, "*", "wildcard")
+		if err := util.WriteToFileIfNotEmpty(certFileName, certByte); err != nil {
+			return err
+		}
+
+		keyFileName := filepath.Join(cert.OutFolder, fmt.Sprintf("%s-key.pem", cert.CommonName))
+		keyFileName = strings.ReplaceAll(keyFileName, "*", "wildcard")
+		if err := util.WriteToFileIfNotEmpty(keyFileName, keyByte); err != nil {
+			return err
+		}
+
+		err = g.repositorySyncer.AddFilesAndCommit(
+			fmt.Sprintf("added certificate for %s", cert.CommonName), certFileName, keyFileName,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = g.repositorySyncer.AddFilesAndCommit(
-		fmt.Sprintf("added certificate for %s", cert.CommonName), certFileName, keyFileName,
-	)
-	return err
+	return nil
 }
 
 func isCertificateReady(cert *certmanagerv1alpha2.Certificate) bool {

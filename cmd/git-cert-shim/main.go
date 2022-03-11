@@ -37,6 +37,7 @@ import (
 	"github.com/sapcc/git-cert-shim/controllers"
 	"github.com/sapcc/git-cert-shim/pkg/config"
 	"github.com/sapcc/git-cert-shim/pkg/git"
+	"github.com/sapcc/git-cert-shim/pkg/vault"
 	"github.com/sapcc/git-cert-shim/pkg/version"
 	// +kubebuilder:scaffold:imports
 )
@@ -61,6 +62,7 @@ func main() {
 		isPrintVersionAndExit,
 		enableLeaderElection bool
 		gitOpts        git.Options
+		vaultOpts      vault.Options
 		controllerOpts config.ControllerOptions
 		debug          bool
 	)
@@ -80,7 +82,11 @@ func main() {
 	flag.StringVar(&gitOpts.BranchName, "git-branch-name", "master", "The name of the git branch to synchronize with.")
 	flag.DurationVar(&gitOpts.SyncPeriod, "git-sync-period", 15*time.Minute, "The period in which synchronization with the git repository is guaranteed.")
 	flag.BoolVar(&gitOpts.IsEnsureEmptyDirectory, "ensure-empty-git-directory", true, "Ensure the creation of an empty directory for the git clone.")
-	flag.BoolVar(&gitOpts.DryRun, "dry-run", false, "Do not push to repository.")
+	flag.BoolVar(&gitOpts.PushCertificates, "git-push-certs", true, "Whether to write certificates into the Git repository. Set to false if you want to push to Vault only.")
+	flag.BoolVar(&gitOpts.DryRun, "dry-run", false, "Write certificates into local Git clone, but do not push them.")
+
+	flag.BoolVar(&vaultOpts.PushCertificates, "vault-push-certs", false, "Whether to write certificates into a Vault KV engine. If set to true, Vault credentials must be given in environment variables (VAULT_ADDR and VAULT_ROLE_ID+VAULT_SECRET_ID for approle auth.)")
+	flag.StringVar(&vaultOpts.KVEngineName, "vault-kv-engine", "secrets", "Name of KV engine where certificates will be stored in Vault.")
 
 	flag.StringVar(&controllerOpts.Namespace, "namespace", "kube-system", "The namespace in which certificate request will be created. Is overwritten by the namespace this controller runs in.")
 	flag.StringVar(&controllerOpts.ConfigFileName, "config-file-name", "git-cert-shim.yaml", "The file containing the certificate configuration.")
@@ -131,9 +137,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	vaultClient, err := vault.NewClientIfSelected(vaultOpts)
+	if err != nil {
+		setupLog.Error(err, "unable to create Vault client")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.GitController{
 		ControllerOptions: &controllerOpts,
 		GitOptions:        &gitOpts,
+		VaultClient:       vaultClient,
 		Log:               ctrl.Log.WithName("controllers").WithName("git"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "git")

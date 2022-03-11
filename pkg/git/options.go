@@ -18,7 +18,6 @@ const (
 
 var (
 	errGitNoRemote        = errors.New("git remote has no remote configured")
-	errGithubNoAuth       = errors.New("No authentication method found")
 	errGithubNoValidURL   = errors.New("No valid Github URL given")
 	sshPrivateKeyFilename = "/root/.ssh/id_rsa"
 )
@@ -52,7 +51,10 @@ type Options struct {
 	// SyncPeriod is the period in which synchronization with the git repository is guaranteed.
 	SyncPeriod time.Duration
 
-	// Do not push to remote repository
+	// Whether to write certificates into the Git repository (will be false when only pushing certs to other storages)
+	PushCertificates bool
+
+	// Do not push to remote repository (but still write to the local Git clone)
 	DryRun bool
 }
 
