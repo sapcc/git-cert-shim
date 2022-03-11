@@ -124,11 +124,14 @@ func (c *Client) UpdateCertificate(data CertificateData) error {
 
 	//we only want to write the secret and therefore produce a new version when actually necessary
 	secret, err := c.client.Logical().Read(fullSecretPath)
+	if err != nil {
+		return err
+	}
 	needsWrite := false
 	if secret == nil {
 		needsWrite = true //secret does not exist yet
 	} else {
-		needsWrite = reflect.DeepEqual(secret.Data["data"], payload)
+		needsWrite = !reflect.DeepEqual(secret.Data["data"], payload)
 	}
 
 	if needsWrite {
