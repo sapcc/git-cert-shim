@@ -1,7 +1,9 @@
 package certificate
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"strings"
 
@@ -14,6 +16,7 @@ type Certificate struct {
 	CommonName string   `yaml:"cn" json:"cn"`
 	SANS       []string `yaml:"sans,omitempty" json:"sans,omitempty"`
 	OutFolder  string   `yaml:"-" json:"-"`
+	VaultPath  string   `yaml:"-" json:"-"`
 }
 
 func (c *Certificate) GetName() string {
@@ -33,11 +36,19 @@ func ReadCertificateConfig(filepath string) ([]*Certificate, error) {
 	}
 
 	type certCfg struct {
+		Vault struct {
+			PathTemplate string `yaml:"path"`
+		} `yaml:"vault"`
 		Certificates []*Certificate `yaml:"certificates" json:"certificates"`
 	}
 
 	var c certCfg
 	if err := yaml.Unmarshal(fileByte, &c); err != nil {
+		return nil, err
+	}
+
+	vaultPathTpl, err := template.New(filepath + "/vault.path").Parse(c.Vault.PathTemplate)
+	if err != nil {
 		return nil, err
 	}
 
@@ -52,6 +63,16 @@ func ReadCertificateConfig(filepath string) ([]*Certificate, error) {
 			return nil, err
 		}
 		certs[idx].OutFolder = dirPath
+
+		// Calculate where to store the certificate and key in Vault.
+		var buf bytes.Buffer
+		err = vaultPathTpl.Execute(&buf, map[string]interface{}{
+			"PathSafeCommonName": strings.ReplaceAll(c.CommonName, "*", "wildcard"),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("while evaluating vault.path template for %q: %w", c.CommonName, err)
+		}
+		certs[idx].VaultPath = buf.String()
 	}
 
 	return certs, nil
