@@ -59,7 +59,7 @@ type GitController struct {
 	mtx               sync.Mutex
 }
 
-func (g *GitController) Start(stop <-chan struct{}) error {
+func (g *GitController) Start(ctx context.Context) error {
 	defer utilruntime.HandleCrash()
 	defer g.queue.ShutDown()
 	defer g.wg.Done()
@@ -67,7 +67,7 @@ func (g *GitController) Start(stop <-chan struct{}) error {
 
 	g.Log.Info("starting controller")
 
-	go wait.Until(g.runWorker, time.Second, stop)
+	go wait.Until(g.runWorker, time.Second, ctx.Done())
 
 	g.requeueAll()
 	go func() {
@@ -79,13 +79,13 @@ func (g *GitController) Start(stop <-chan struct{}) error {
 			case <-ticker.C:
 				g.requeueAll()
 				g.Log.Info("requeued all certificates", "syncPeriod", g.GitOptions.SyncPeriod)
-			case <-stop:
+			case <-ctx.Done():
 				return
 			}
 		}
 	}()
 
-	<-stop
+	<-ctx.Done()
 	g.Log.Info("stopping controller")
 	return nil
 }

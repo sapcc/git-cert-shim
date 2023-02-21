@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.16 as builder
+FROM golang:1.19 as builder
 
 WORKDIR /workspace
 
@@ -23,7 +23,7 @@ COPY pkg/ pkg/
 # Build the controller.
 RUN make build CGO_ENABLED=0
 
-FROM alpine:3.14.2
+FROM alpine:3.17.2
 LABEL source_repository="https://github.com/sapcc/git-cert-shim"
 
 WORKDIR /

@@ -17,28 +17,28 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"net/http"
-	_ "net/http/pprof"
-	"os"
-	"time"
-
 	certmanagerv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	uber_zap "go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"k8s.io/apimachinery/pkg/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"github.com/sapcc/git-cert-shim/controllers"
 	"github.com/sapcc/git-cert-shim/pkg/config"
 	"github.com/sapcc/git-cert-shim/pkg/git"
 	"github.com/sapcc/git-cert-shim/pkg/vault"
 	"github.com/sapcc/git-cert-shim/pkg/version"
+	uber_zap "go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+	"net/http"
+	_ "net/http/pprof"
+	"os"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"time"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -50,8 +50,8 @@ var (
 )
 
 func init() {
-	_ = clientgoscheme.AddToScheme(scheme)
-	_ = certmanagerv1alpha2.AddToScheme(scheme)
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(certmanagerv1alpha2.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -121,10 +121,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := mgr.Add(manager.RunnableFunc(func(stop <-chan struct{}) error {
+	if err := mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
 		server := &http.Server{Addr: profilerAddr}
 		go func() {
-			<-stop
+			<-ctx.Done()
 			server.Close()
 		}()
 		setupLog.Info("Starting /debug/pprof server", "listen", profilerAddr)

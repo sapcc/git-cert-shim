@@ -46,7 +46,7 @@ type Client struct {
 	authValidUntil time.Time
 }
 
-//Returns (nil, nil) if Vault support is not selected through the respective CLI options.
+// Returns (nil, nil) if Vault support is not selected through the respective CLI options.
 func NewClientIfSelected(opts Options) (*Client, error) {
 	if !opts.PushCertificates {
 		return nil, nil

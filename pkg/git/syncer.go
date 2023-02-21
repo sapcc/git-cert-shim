@@ -1,6 +1,7 @@
 package git
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -47,7 +48,7 @@ func NewRepositorySyncerAndInit(logger logr.Logger, opts *Options, mtx *sync.Mut
 	return r, nil
 }
 
-func (r *RepositorySyncer) Start(stop <-chan struct{}) error {
+func (r *RepositorySyncer) Start(ctx context.Context) error {
 	defer close(r.syncSoon)
 
 	go func() {
@@ -62,13 +63,12 @@ func (r *RepositorySyncer) Start(stop <-chan struct{}) error {
 			case <-ticker.C:
 				err := r.syncWithRetry()
 				r.handleSyncError(err)
-			case <-stop:
+			case <-ctx.Done():
 				return
 			}
 		}
 	}()
-
-	<-stop
+	<-ctx.Done()
 	return nil
 }
 
