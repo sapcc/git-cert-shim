@@ -21,4 +21,4 @@ secretGenerator:
 images:
 - name: git-cert-shim
   newName: keppel.eu-de-1.cloud.sap/ccloud/git-cert-shim
-  newTag: v1.1.0
+  newTag: v1.2.0
