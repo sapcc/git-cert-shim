@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	"github.com/go-logr/logr"
-	certmanagerv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -134,7 +134,7 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 	logger := g.Log.WithValues("host", cert.CommonName)
 
 	logger.Info("ensuring certificate exists in cluster", "namespace", g.ControllerOptions.Namespace, "name", cert.GetName())
-	c, err := k8sutils.EnsureCertificate(ctx, g.client, g.ControllerOptions.Namespace, cert.GetName(), func(c *certmanagerv1alpha2.Certificate) *certmanagerv1alpha2.Certificate {
+	c, err := k8sutils.EnsureCertificate(ctx, g.client, g.ControllerOptions.Namespace, cert.GetName(), func(c *certmanagerv1.Certificate) *certmanagerv1.Certificate {
 		c.Spec.IssuerRef = g.ControllerOptions.DefaultIssuer
 		c.Spec.CommonName = cert.CommonName
 		c.Spec.DNSNames = cert.SANS
@@ -205,9 +205,9 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 	return nil
 }
 
-func isCertificateReady(cert *certmanagerv1alpha2.Certificate) bool {
+func isCertificateReady(cert *certmanagerv1.Certificate) bool {
 	for _, c := range cert.Status.Conditions {
-		if c.Type == certmanagerv1alpha2.CertificateConditionReady {
+		if c.Type == certmanagerv1.CertificateConditionReady {
 			return c.Status == cmmeta.ConditionTrue
 		}
 	}

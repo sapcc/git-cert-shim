@@ -3,15 +3,15 @@ package k8sutils
 import (
 	"context"
 
-	certmanagerv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func GetCertificate(ctx context.Context, c client.Client, namespace, name string) (*certmanagerv1alpha2.Certificate, error) {
-	cert := new(certmanagerv1alpha2.Certificate)
+func GetCertificate(ctx context.Context, c client.Client, namespace, name string) (*certmanagerv1.Certificate, error) {
+	cert := new(certmanagerv1.Certificate)
 	err := c.Get(ctx, client.ObjectKey{
 		Namespace: namespace,
 		Name:      name,
@@ -19,7 +19,7 @@ func GetCertificate(ctx context.Context, c client.Client, namespace, name string
 	return cert, err
 }
 
-func EnsureCertificate(ctx context.Context, c client.Client, namespace, name string, transform func(cert *certmanagerv1alpha2.Certificate) *certmanagerv1alpha2.Certificate) (*certmanagerv1alpha2.Certificate, error) {
+func EnsureCertificate(ctx context.Context, c client.Client, namespace, name string, transform func(cert *certmanagerv1.Certificate) *certmanagerv1.Certificate) (*certmanagerv1.Certificate, error) {
 	cert, err := GetCertificate(ctx, c, namespace, name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {

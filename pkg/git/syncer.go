@@ -39,7 +39,7 @@ func NewRepositorySyncerAndInit(logger logr.Logger, opts *Options, mtx *sync.Mut
 	}
 
 	start := time.Now()
-	logger.Info("cloning repository. this might take a while..")
+	logger.Info("cloning repository. this might take a while..", "repository", opts.RemoteURL, "path", opts.AbsLocalPath)
 	if err := r.clone(); err != nil {
 		return nil, err
 	}

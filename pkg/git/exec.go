@@ -76,7 +76,7 @@ func (c *command) run(args ...string) (string, error) {
 	case <-timeout:
 		if err := cmd.Process.Kill(); err != nil {
 			fmt.Println("failed to kill command: ", err.Error())
-			return "", err
+			return strings.TrimSpace(stdOut.String()), err
 		}
 		return "", fmt.Errorf("command timed out after %s: %s\n", time.Since(start).String(), cmd.String())
 	case err := <-done:
@@ -84,7 +84,7 @@ func (c *command) run(args ...string) (string, error) {
 			fmt.Println("Output:", strings.TrimSpace(stdErr.String()))
 		}
 		if err != nil {
-			return "", errors.Wrapf(err, "command returned non-zero exit code: %s", cmd.String())
+			return strings.TrimSpace(stdOut.String()), errors.Wrapf(err, "command returned non-zero exit code: %s", cmd.String())
 		}
 	}
 	return strings.TrimSpace(stdOut.String()), nil

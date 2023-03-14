@@ -19,20 +19,16 @@ func NewGit(opts *Options) (*Git, error) {
 	if err := opts.validate(); err != nil {
 		return nil, err
 	}
-
 	if !filepath.IsAbs(opts.AbsLocalPath) {
 		return nil, fmt.Errorf("requires an absolute path. cannot use: %s", opts.AbsLocalPath)
 	}
-
 	if err := util.EnsureDir(opts.AbsLocalPath, opts.IsEnsureEmptyDirectory); err != nil {
 		return nil, errors.Wrapf(err, "failed to get or create path %s", opts.AbsLocalPath)
 	}
-
 	cmd, err := newCommand("git", "-C", opts.AbsLocalPath)
 	if err != nil {
 		return nil, err
 	}
-
 	return &Git{
 		Options: opts,
 		command: cmd,
@@ -40,8 +36,8 @@ func NewGit(opts *Options) (*Git, error) {
 }
 
 func (g *Git) Clone() error {
-	if _, err := g.run("clone", g.RemoteURL, g.AbsLocalPath); err != nil {
-		return errors.Wrap(err, "git clone failed")
+	if res, err := g.run("clone", g.RemoteURL, g.AbsLocalPath); err != nil {
+		return errors.Wrapf(err, "git clone failed: %s", res)
 	}
 	return nil
 }
