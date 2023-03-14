@@ -5,6 +5,7 @@ WORKDIR /workspace
 
 # Copy miscellaneous stuff.
 COPY .git/ .git/
+COPY hack/ hack/
 COPY Makefile Makefile
 COPY VERSION VERSION
 
