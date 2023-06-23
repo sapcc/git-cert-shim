@@ -26,10 +26,10 @@ type Options struct {
 	// AbsLocalPath is the path of the directory to clone to.
 	AbsLocalPath,
 
-	// RemoteURL is the remote URL of the github repository.
+	// RemoteURL is the remote URL of the Github repository.
 	RemoteURL,
 
-	// BranchName is the name of the git branch.
+	// BranchName is the name of the git branch. Defaults to master.
 	BranchName,
 
 	// AuthorName is the name of the author used for commits.
@@ -42,7 +42,7 @@ type Options struct {
 	// Can also be provided via environment variable GITHUB_API_TOKEN.
 	GithubToken string
 
-	// Github SSH private key file
+	// GithubSSHPrivkeyFilename is the name of the SSH private key file.
 	GithubSSHPrivkeyFilename string
 
 	// IsEnsureEmptyDirectory ensures the local directory is empty before cloning to it.
@@ -85,6 +85,9 @@ func (o *Options) validate() error {
 		tmpDir := pathParts[len(pathParts)-1]
 		tmpDir = strings.ReplaceAll(tmpDir, ".", "_")
 		o.AbsLocalPath = filepath.Join(os.TempDir(), tmpDir)
+	}
+	if o.BranchName == "" {
+		o.BranchName = "master"
 	}
 	return nil
 }

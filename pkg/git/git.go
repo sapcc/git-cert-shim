@@ -36,7 +36,11 @@ func NewGit(opts *Options) (*Git, error) {
 }
 
 func (g *Git) Clone() error {
-	if res, err := g.run("clone", g.RemoteURL, g.AbsLocalPath); err != nil {
+	if res, err := g.run("clone",
+		"--progress",
+		"--depth", "1", "--single-branch", "--branch", g.BranchName,
+		g.RemoteURL, g.AbsLocalPath,
+	); err != nil {
 		return errors.Wrapf(err, "git clone failed: %s", res)
 	}
 	return nil
