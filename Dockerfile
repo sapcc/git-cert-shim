@@ -24,12 +24,13 @@ COPY pkg/ pkg/
 # Build the controller.
 RUN make build CGO_ENABLED=0
 
-FROM alpine:3.18.0
+FROM alpine:3.19
 LABEL source_repository="https://github.com/sapcc/git-cert-shim"
 
 WORKDIR /
 
-RUN apk --update add git less openssh && \
+RUN apk update && apk upgrade && \
+    apk --update add git less openssh && \
     rm -rf /var/lib/apt/lists/* && \
     rm /var/cache/apk/* && git --version
 
