@@ -138,7 +138,7 @@ func (c *Client) UpdateCertificate(data CertificateData) error {
 	if needsWrite {
 		_, err := c.client.Logical().Write(fullSecretPath, map[string]interface{}{"data": payload})
 		if err != nil {
-			return fmt.Errorf("while wrinting payload to vault: %w", err)
+			return fmt.Errorf("while writing payload to vault: %w", err)
 		}
 		err = c.patchMetadata(fullSecretPath)
 		return err
