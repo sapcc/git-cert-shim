@@ -20,6 +20,7 @@
 package vault
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -136,7 +137,30 @@ func (c *Client) UpdateCertificate(data CertificateData) error {
 
 	if needsWrite {
 		_, err := c.client.Logical().Write(fullSecretPath, map[string]interface{}{"data": payload})
+		if err != nil {
+			return fmt.Errorf("while writing payload to vault: %w", err)
+		}
+		err = c.patchMetadata(fullSecretPath)
 		return err
 	}
 	return nil
+}
+
+func (c *Client) patchMetadata(fullSecretPath string) error {
+	t := time.Now().Add(365 * 24 * time.Hour)
+	date := fmt.Sprintf("%d-%02d-%02d", t.Year(), t.Month(), t.Day())
+	customMetadata := map[string]interface{}{
+		"accessed_resource":       c.client.Address(),
+		"application_criticality": "high",
+		"expiry_date":             date,
+		"review_date":             date,
+		"is_privileged":           "false",
+		"is_single_factor":        "false",
+		"username":                "UNLINKED",
+	}
+
+	err := c.client.KVv2(fullSecretPath).PatchMetadata(context.TODO(), fullSecretPath, vaultapi.KVMetadataPatchInput{
+		CustomMetadata: customMetadata,
+	})
+	return err
 }
