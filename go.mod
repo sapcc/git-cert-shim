@@ -14,8 +14,8 @@ require (
 	github.com/cert-manager/cert-manager v1.8.0
 	github.com/go-logr/logr v1.2.4
 	github.com/hashicorp/vault/api v1.12.2
-	github.com/onsi/ginkgo/v2 v2.9.7
-	github.com/onsi/gomega v1.27.7
+	github.com/onsi/ginkgo/v2 v2.11.0
+	github.com/onsi/gomega v1.27.10
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.16.0
 	go.uber.org/zap v1.24.0
@@ -81,7 +81,7 @@ require (
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.9.1 // indirect
+	golang.org/x/tools v0.9.3 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
