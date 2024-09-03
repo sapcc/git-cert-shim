@@ -12,7 +12,7 @@ replace (
 
 require (
 	github.com/cert-manager/cert-manager v1.8.0
-	github.com/go-logr/logr v1.2.4
+	github.com/go-logr/logr v1.4.2
 	github.com/hashicorp/vault/api v1.12.2
 	github.com/onsi/ginkgo/v2 v2.9.7
 	github.com/onsi/gomega v1.27.7
