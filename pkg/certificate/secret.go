@@ -13,20 +13,21 @@ const (
 	tlsKey = "tls.key"
 )
 
-func ExtractCAAndCertificateAndPrivateKeyFromSecret(tlsSecret *corev1.Secret) ([]byte, []byte, []byte, error) {
+func ExtractCAAndCertificateAndPrivateKeyFromSecret(tlsSecret *corev1.Secret) (ca, cert, key []byte, err error) {
+	//nolint:gosimple
 	if tlsSecret.Data == nil || len(tlsSecret.Data) == 0 {
 		return nil, nil, nil, errors.New("secret is empty")
 	}
 
 	// Optional.
-	ca, _ := tlsSecret.Data[caCrt]
+	ca = tlsSecret.Data[caCrt]
 
 	cert, ok := tlsSecret.Data[tlsCrt]
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("%s missing in secret data", tlsCrt)
 	}
 
-	key, ok := tlsSecret.Data[tlsKey]
+	key, ok = tlsSecret.Data[tlsKey]
 	if !ok {
 		return nil, nil, nil, fmt.Errorf("%s missing in secret data", tlsKey)
 	}

@@ -12,7 +12,7 @@ import (
 
 const (
 	gitRemoteURLEnvVarkey      = "GIT_REMOTE_URL"
-	gitTokenEnvVarKey          = "GIT_API_TOKEN"
+	gitTokenEnvVarKey          = "GIT_API_TOKEN" //nolint:gosec
 	gitSSHPrivkeyFileEnvVarKey = "GIT_SSH_PRIVKEY_FILE"
 )
 
