@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -150,7 +151,7 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 	// If the certmanager.certificate is not ready, we abort here and check again later.
 	// Once it is ready, the secret contains the tls certificate and private key.
 	if !isCertificateReady(c) {
-		return fmt.Errorf("certificate not (yet) ready. re-adding to queue")
+		return errors.New("certificate not (yet) ready. re-adding to queue")
 	}
 
 	tlsSecret, err := k8sutils.GetSecret(ctx, g.client, g.ControllerOptions.Namespace, cert.GetSecretName())
@@ -182,20 +183,20 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 		g.mtx.Lock()
 		defer g.mtx.Unlock()
 
-		certFileName := filepath.Join(cert.OutFolder, fmt.Sprintf("%s.pem", cert.CommonName))
+		certFileName := filepath.Join(cert.OutFolder, cert.CommonName+".pem")
 		certFileName = strings.ReplaceAll(certFileName, "*", "wildcard")
 		if err := util.WriteToFileIfNotEmpty(certFileName, certByte); err != nil {
 			return err
 		}
 
-		keyFileName := filepath.Join(cert.OutFolder, fmt.Sprintf("%s-key.pem", cert.CommonName))
+		keyFileName := filepath.Join(cert.OutFolder, cert.CommonName+"-key.pem")
 		keyFileName = strings.ReplaceAll(keyFileName, "*", "wildcard")
 		if err := util.WriteToFileIfNotEmpty(keyFileName, keyByte); err != nil {
 			return err
 		}
 
 		err = g.repositorySyncer.AddFilesAndCommit(
-			fmt.Sprintf("added certificate for %s", cert.CommonName), certFileName, keyFileName,
+			"added certificate for "+cert.CommonName, certFileName, keyFileName,
 		)
 		if err != nil {
 			return err

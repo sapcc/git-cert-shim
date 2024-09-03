@@ -25,7 +25,7 @@ func (c *Certificate) GetName() string {
 }
 
 func (c *Certificate) GetSecretName() string {
-	return fmt.Sprintf("tls-%s", c.GetName())
+	return "tls-" + c.GetName()
 }
 
 func ReadCertificateConfig(filePath string) ([]*Certificate, error) {

@@ -73,7 +73,7 @@ func NewClientIfSelected(opts Options) (*Client, error) {
 		return nil, err
 	}
 
-	//authenticate once immediately to check correctness of credentials
+	// authenticate once immediately to check correctness of credentials
 	c := &Client{client: client, Options: opts, authValidUntil: time.Now().Add(-1 * time.Hour)}
 	err = c.authenticateIfNecessary()
 	if err != nil {
@@ -86,12 +86,12 @@ func (c *Client) authenticateIfNecessary() error {
 	c.authMutex.Lock()
 	defer c.authMutex.Unlock()
 
-	//use existing token if possible
+	// use existing token if possible
 	if c.authValidUntil.After(time.Now()) {
 		return nil
 	}
 
-	//perform approle authentication
+	// perform approle authentication
 	resp, err := c.client.Logical().Write("auth/approle/login", map[string]interface{}{
 		"role_id":   c.Options.authRoleID,
 		"secret_id": c.Options.authSecretID,
@@ -123,14 +123,14 @@ func (c *Client) UpdateCertificate(data CertificateData) error {
 		"private-key": string(data.KeyBytes),
 	}
 
-	//we only want to write the secret and therefore produce a new version when actually necessary
+	// we only want to write the secret and therefore produce a new version when actually necessary
 	secret, err := c.client.Logical().Read(fullSecretPath)
 	if err != nil {
 		return err
 	}
 	needsWrite := false
 	if secret == nil {
-		needsWrite = true //secret does not exist yet
+		needsWrite = true // secret does not exist yet
 	} else {
 		needsWrite = !reflect.DeepEqual(secret.Data["data"], payload)
 	}

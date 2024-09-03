@@ -10,6 +10,16 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+## Location to install dependencies an GO binaries
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+## Tool Binaries
+GOLINT ?= $(LOCALBIN)/golangci-lint
+## Tool Versions
+GOLINT_VERSION ?= v1.60.2
+GINKGOLINTER_VERSION ?= v0.16.2
+
 all: build
 
 # Run tests
@@ -97,3 +107,13 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+.PHONY: lint
+lint: golint
+	$(GOLINT) run -v --timeout 5m
+
+.PHONY: golint
+golint: $(GOLINT)
+$(GOLINT): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLINT_VERSION)
+	GOBIN=$(LOCALBIN) go install github.com/nunnatsa/ginkgolinter/cmd/ginkgolinter@$(GINKGOLINTER_VERSION)

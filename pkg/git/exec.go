@@ -45,12 +45,12 @@ func newCommand(cmd string, defaultArgs ...string) (*command, error) {
 		timeout:     10 * time.Minute,
 		defaultArgs: defaultArgs,
 	}
-	return c, c.verify()
+	return c, c.verify() //nolint:gocritic
 }
 
 // Run starts the command, waits until it finished and returns stdOut or an error containing the stdError message.
 func (c *command) run(args ...string) (string, error) {
-	cmd := exec.Command(c.cmd, append(c.defaultArgs, args...)...)
+	cmd := exec.Command(c.cmd, append(c.defaultArgs, args...)...) //nolint:gosec
 
 	if v, ok := os.LookupEnv("DEBUG"); ok && v == "true" {
 		fmt.Println("running: ", cmd.String())
@@ -78,7 +78,7 @@ func (c *command) run(args ...string) (string, error) {
 			fmt.Println("failed to kill command: ", err.Error())
 			return strings.TrimSpace(stdOut.String()), err
 		}
-		return "", fmt.Errorf("command timed out after %s: %s\n", time.Since(start).String(), cmd.String())
+		return "", fmt.Errorf("command timed out after %s: %s", time.Since(start).String(), cmd.String())
 	case err := <-done:
 		if stdErr.Len() > 0 {
 			fmt.Println("Output:", strings.TrimSpace(stdErr.String()))

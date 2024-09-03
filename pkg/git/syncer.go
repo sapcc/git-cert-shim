@@ -123,6 +123,7 @@ func (r *RepositorySyncer) syncWithRetry() error {
 	defer r.mtx.Unlock()
 
 	err := retry.OnError(retry.DefaultBackoff,
+		//nolint:gocritic
 		func(err error) bool {
 			// Retry the sync, if a git pull --rebase can help.
 			return isErrFailedToPushSomeRefs(err)

@@ -30,7 +30,7 @@ func EnsureDir(path string, isEnsureEmptyDir bool) error {
 	if isEnsureEmptyDir {
 		p := path
 		if !strings.HasSuffix(p, "/") {
-			p = p + "/"
+			p += "/"
 		}
 		if err := os.RemoveAll(p); os.IsNotExist(err) {
 			return err
