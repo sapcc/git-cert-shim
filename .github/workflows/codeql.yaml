@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'go' ]
-        go-version: [ '1.22' ]
+        go-version: [ '1.21' ]
 
     steps:
     - name: Checkout repository
