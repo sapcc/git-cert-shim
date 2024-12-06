@@ -24,7 +24,7 @@ COPY pkg/ pkg/
 # Build the controller.
 RUN make build CGO_ENABLED=0
 
-FROM alpine:3.19
+FROM alpine:3.21
 LABEL source_repository="https://github.com/sapcc/git-cert-shim"
 
 WORKDIR /
