@@ -35,6 +35,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	"github.com/sapcc/git-cert-shim/controllers"
 	"github.com/sapcc/git-cert-shim/pkg/config"
@@ -112,11 +113,12 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true), zap.Level(&level)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		Port:               9443,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "336042e1.git-cert-shim",
+		Scheme: scheme,
+		Metrics: server.Options{
+			BindAddress: metricsAddr,
+		},
+		LeaderElection:   enableLeaderElection,
+		LeaderElectionID: "336042e1.git-cert-shim",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

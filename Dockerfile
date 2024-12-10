@@ -1,7 +1,9 @@
 # Build the manager binary
-FROM golang:1.21 as builder
+FROM golang:1.23-alpine as builder
 
 WORKDIR /workspace
+
+RUN apk update && apk add make
 
 # Copy miscellaneous stuff.
 COPY .git/ .git/
@@ -24,13 +26,13 @@ COPY pkg/ pkg/
 # Build the controller.
 RUN make build CGO_ENABLED=0
 
-FROM alpine:3.19
+FROM alpine:3.21
 LABEL source_repository="https://github.com/sapcc/git-cert-shim"
 
 WORKDIR /
 
 RUN apk update && apk upgrade --no-cache --no-progress && \
-    apk --update add git less openssh && \
+    apk --update add git less openssh ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     rm /var/cache/apk/* && git --version
 

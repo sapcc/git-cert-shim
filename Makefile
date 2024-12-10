@@ -1,7 +1,5 @@
 # Image URL to use all building/pushing image targets
 IMG ?= keppel.eu-de-1.cloud.sap/ccloud/git-cert-shim
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true"
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -49,7 +47,7 @@ deploy: manifests
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=git-cert-shim-role webhook paths="./..." output:rbac:artifacts:config=config/rbac
+	$(CONTROLLER_GEN) rbac:roleName=git-cert-shim-role webhook paths="./..." output:rbac:artifacts:config=config/rbac
 
 # Run go fmt against code
 fmt:
@@ -66,7 +64,7 @@ generate: controller-gen
 # Build the docker image
 docker-build: VERSION=$(shell cat VERSION)
 docker-build:
-	docker build . -t ${IMG}:${VERSION}
+	docker build . --platform linux/amd64 -t ${IMG}:${VERSION}
 
 # Push the docker image
 docker-push: VERSION=$(shell cat VERSION)
@@ -102,7 +100,7 @@ release: git-tag-release set-image git-push-tag docker-build docker-push
 # download controller-gen if necessary
 controller-gen:
 ifeq (, $(shell which controller-gen))
-	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.5
+	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.5
 CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)

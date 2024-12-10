@@ -1,15 +1,14 @@
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: git-cert-shim-role
 rules:
 - apiGroups:
-  - cert-manager.io
+  - ""
   resources:
-  - certificates
+  - configmaps
+  - secrets
   verbs:
   - create
   - delete
@@ -19,10 +18,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - ""
+  - cert-manager.io
   resources:
-  - configmaps
-  - secrets
+  - certificates
   verbs:
   - create
   - delete
