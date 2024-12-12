@@ -15,8 +15,9 @@ $(LOCALBIN):
 ## Tool Binaries
 GOLINT ?= $(LOCALBIN)/golangci-lint
 ## Tool Versions
-GOLINT_VERSION ?= v1.60.2
-GINKGOLINTER_VERSION ?= v0.16.2
+GOLINT_VERSION ?= 1.60.2
+GINKGOLINTER_VERSION ?= 0.16.2
+CONTROLLER_GEN_VERSION ?= 0.16.5
 
 all: build
 
@@ -100,7 +101,7 @@ release: git-tag-release set-image git-push-tag docker-build docker-push
 # download controller-gen if necessary
 controller-gen:
 ifeq (, $(shell which controller-gen))
-	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.5
+	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v$(CONTROLLER_GEN_VERSION)
 CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
@@ -113,5 +114,5 @@ lint: golint
 .PHONY: golint
 golint: $(GOLINT)
 $(GOLINT): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLINT_VERSION)
-	GOBIN=$(LOCALBIN) go install github.com/nunnatsa/ginkgolinter/cmd/ginkgolinter@$(GINKGOLINTER_VERSION)
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v$(GOLINT_VERSION)
+	GOBIN=$(LOCALBIN) go install github.com/nunnatsa/ginkgolinter/cmd/ginkgolinter@v$(GINKGOLINTER_VERSION)
