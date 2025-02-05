@@ -139,13 +139,13 @@ func (c *Client) UpdateCertificate(data CertificateData) error {
 		if err != nil {
 			return fmt.Errorf("while writing payload to vault: %w", err)
 		}
-		err = c.patchMetadata(fullSecretPath, data.VaultPath)
+		err = c.patchMetadata(data.VaultPath)
 		return err
 	}
 	return nil
 }
 
-func (c *Client) patchMetadata(fullSecretPath, vaultPath string) error {
+func (c *Client) patchMetadata(vaultPath string) error {
 	t := time.Now().Add(365 * 24 * time.Hour)
 	date := fmt.Sprintf("%d-%02d-%02d", t.Year(), t.Month(), t.Day())
 	customMetadata := map[string]interface{}{
@@ -158,7 +158,7 @@ func (c *Client) patchMetadata(fullSecretPath, vaultPath string) error {
 		"username":                "UNLINKED",
 	}
 
-	err := c.client.KVv2(fullSecretPath).PatchMetadata(context.TODO(), vaultPath, vaultapi.KVMetadataPatchInput{
+	err := c.client.KVv2(c.Options.KVEngineName).PatchMetadata(context.TODO(), vaultPath, vaultapi.KVMetadataPatchInput{
 		CustomMetadata: customMetadata,
 	})
 	return err
