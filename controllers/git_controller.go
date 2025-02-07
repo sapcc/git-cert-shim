@@ -55,7 +55,7 @@ type GitController struct {
 	client            client.Client
 	scheme            *runtime.Scheme
 	repositorySyncer  *git.RepositorySyncer
-	queue             workqueue.RateLimitingInterface
+	queue             workqueue.TypedRateLimitingInterface[interface{}]
 	wg                sync.WaitGroup
 	mtx               sync.Mutex
 }
@@ -258,7 +258,7 @@ func (g *GitController) SetupWithManager(mgr ctrl.Manager) error {
 
 	g.scheme = mgr.GetScheme()
 	g.client = mgr.GetClient()
-	g.queue = workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(30*time.Second, 600*time.Second))
+	g.queue = workqueue.NewTypedRateLimitingQueue(workqueue.NewTypedItemExponentialFailureRateLimiter[interface{}](30*time.Second, 600*time.Second))
 	g.ControllerOptions.Namespace = util.GetEnv("NAMESPACE", g.ControllerOptions.Namespace)
 
 	if err := mgr.Add(g); err != nil {
