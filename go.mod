@@ -1,8 +1,6 @@
 module github.com/sapcc/git-cert-shim
 
-go 1.23.0
-
-toolchain go1.23.5
+go 1.23.6
 
 replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.32.1
 
