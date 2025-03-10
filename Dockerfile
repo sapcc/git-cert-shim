@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.23-alpine as builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.23-alpine AS builder
 
 WORKDIR /workspace
 
@@ -31,10 +31,9 @@ LABEL source_repository="https://github.com/sapcc/git-cert-shim"
 
 WORKDIR /
 
-RUN apk update && apk upgrade --no-cache --no-progress && \
-    apk --update add git less openssh ca-certificates && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm /var/cache/apk/* && git --version
+RUN apk upgrade --no-cache --no-progress \
+  && apk --update add git less openssh ca-certificates && \
+  && apk del --no-cache --no-progress apk-tools alpine-keys alpine-release libc-utils
 
 RUN mkdir -p /root/.ssh
 
