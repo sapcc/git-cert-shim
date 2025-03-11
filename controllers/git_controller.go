@@ -171,7 +171,7 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 			VaultPath: cert.VaultPath,
 			CertBytes: certByte,
 			KeyBytes:  keyByte,
-		}, c.Status)
+		})
 		if err != nil {
 			logger.Error(err, "failed to write certificate to Vault", "namespace", g.ControllerOptions.Namespace, "name", cert.GetSecretName())
 			return err
