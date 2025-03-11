@@ -15,7 +15,7 @@ golang:
   setGoModVersion: false
 
 golangciLint:
-  createConfig: false
+  createConfig: true
 
 goreleaser:
   createConfig: true
