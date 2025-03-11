@@ -1,0 +1,100 @@
+# Configuration file for <https://github.com/sapcc/go-makefile-maker>
+
+metadata:
+  url: https://github.com/sapcc/git-cert-shim
+
+binaries:
+  - name:        git-cert-shim
+    fromPackage: ./cmd/git-cert-shim
+    installTo:   bin/
+
+dockerfile:
+  enabled: false
+
+golang:
+  setGoModVersion: false
+
+golangciLint:
+  createConfig: false
+
+goreleaser:
+  createConfig: true
+  binaryName: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+  format: .tar.gz
+  nameTemplate: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+githubWorkflow:
+  ci:
+    enabled: true
+    coveralls: false
+  pushContainerToGhcr:
+    enabled: true
+    platforms: "linux/amd64,linux/arm64"
+    tagStrategy:
+      - edge
+      - latest
+      - semver
+      - sha
+  securityChecks:
+    enabled: true
+  license:
+    enabled: true
+  release:
+    enabled: true
+
+makefile:
+  enabled: false
+
+renovate:
+  enabled: true
+  assignees:
+    - kengou
+    - abhijith-darshan
+  customManagers:
+    - customType: "regex"
+      description: "Bump controller tools version in the Makefile"
+      fileMatch: [
+        "^Makefile$"
+      ]
+      matchStrings: [
+        "CONTROLLER_TOOLS_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
+      ]
+      datasourceTemplate: "github-tags"
+      depNameTemplate: "kubernetes-sigs/controller-tools"
+      extractVersionTemplate: "^v(?<version>.*)$"
+    - customType: "regex"
+      description: "Bump golangci-lint version in the Makefile"
+      fileMatch: [
+        "^Makefile$"
+      ]
+      matchStrings: [
+        "GOLINT_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
+      ]
+      datasourceTemplate: "github-tags"
+      depNameTemplate: "golangci/golangci-lint"
+      extractVersionTemplate: "^v(?<version>.*)$"
+    - customType: "regex"
+      description: "Bump ginkolinter version in the Makefile"
+      fileMatch: [
+        "^Makefile$"
+      ]
+      matchStrings: [
+        "GINKGOLINTER_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
+      ]
+      datasourceTemplate: "github-tags"
+      depNameTemplate: "nunnatsa/ginkgolinter"
+      extractVersionTemplate: "^v(?<version>.*)$"
+  packageRules:
+    - matchPackageNames: [
+        "github-actions"
+      ]
+      groupName: "github actions"
+      matchUpdateTypes: [
+        "major",
+        "minor",
+        "patch"
+      ]
+      minimumReleaseAge: "14 days"
+      extends: [
+        "helpers:pinGitHubActionDigests"
+      ]
