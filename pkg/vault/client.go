@@ -28,6 +28,7 @@ import (
 	"sync"
 	"time"
 
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	vaultapi "github.com/hashicorp/vault/api"
 )
 
@@ -110,7 +111,7 @@ type CertificateData struct {
 	KeyBytes  []byte
 }
 
-func (c *Client) UpdateCertificate(data CertificateData) error {
+func (c *Client) UpdateCertificate(data CertificateData, certStatus certmanagerv1.CertificateStatus) error {
 	err := c.authenticateIfNecessary()
 	if err != nil {
 		return err
@@ -127,6 +128,11 @@ func (c *Client) UpdateCertificate(data CertificateData) error {
 	if err != nil {
 		return err
 	}
+	secretMeta, err := c.client.KVv2(c.Options.KVEngineName).GetMetadata(context.TODO(), data.VaultPath)
+	if err != nil {
+		return err
+	}
+
 	needsWrite := false
 	if secret == nil {
 		needsWrite = true // secret does not exist yet
@@ -134,25 +140,24 @@ func (c *Client) UpdateCertificate(data CertificateData) error {
 		needsWrite = !reflect.DeepEqual(secret.Data["data"], payload)
 	}
 
-	if needsWrite {
+	if needsWrite || secretMeta.CustomMetadata["expiry_date"] != fmt.Sprintf("%d-%02d-%02d", certStatus.NotAfter.Year(), certStatus.NotAfter.Month(), certStatus.NotAfter.Day()) {
 		_, err := c.client.Logical().Write(fullSecretPath, map[string]interface{}{"data": payload})
 		if err != nil {
 			return fmt.Errorf("while writing payload to vault: %w", err)
 		}
-		err = c.patchMetadata(data.VaultPath)
+		err = c.patchMetadata(data.VaultPath, certStatus)
 		return err
 	}
+
 	return nil
 }
 
-func (c *Client) patchMetadata(vaultPath string) error {
-	t := time.Now().Add(365 * 24 * time.Hour)
-	date := fmt.Sprintf("%d-%02d-%02d", t.Year(), t.Month(), t.Day())
+func (c *Client) patchMetadata(vaultPath string, certStatus certmanagerv1.CertificateStatus) error {
 	customMetadata := map[string]interface{}{
 		"accessed_resource":       c.client.Address(),
 		"application_criticality": "high",
-		"expiry_date":             date,
-		"review_date":             date,
+		"expiry_date":             fmt.Sprintf("%d-%02d-%02d", certStatus.NotAfter.Year(), certStatus.NotAfter.Month(), certStatus.NotAfter.Day()),
+		"review_date":             fmt.Sprintf("%d-%02d-%02d", certStatus.RenewalTime.Year(), certStatus.RenewalTime.Month(), certStatus.RenewalTime.Day()),
 		"is_privileged":           "false",
 		"is_single_factor":        "false",
 		"username":                "UNLINKED",
