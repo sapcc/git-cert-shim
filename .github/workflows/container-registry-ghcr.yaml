@@ -11,6 +11,15 @@ name: Container Registry GHCR
   push:
     branches:
       - master
+    paths:
+      - cmd/**
+      - pkg/**
+      - controllers/**
+      - Dockerfile
+      - go.mod
+      - go.sum
+    tags:
+      - v*.*.*
   workflow_dispatch: {}
 permissions:
   contents: read
