@@ -25,3 +25,6 @@ vendor
 *.swp
 *.swo
 *~
+
+# build
+/build/
