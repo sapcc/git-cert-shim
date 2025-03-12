@@ -32,7 +32,7 @@ LABEL source_repository="https://github.com/sapcc/git-cert-shim"
 WORKDIR /
 
 RUN apk upgrade --no-cache --no-progress \
-  && apk --update add git less openssh ca-certificates && \
+  && apk --update add git less openssh ca-certificates \
   && apk del --no-cache --no-progress apk-tools alpine-keys alpine-release libc-utils
 
 RUN mkdir -p /root/.ssh

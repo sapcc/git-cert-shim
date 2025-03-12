@@ -15,7 +15,7 @@ golang:
   setGoModVersion: false
 
 golangciLint:
-  createConfig: true
+  createConfig: false
 
 goReleaser:
   createConfig: true
@@ -46,7 +46,7 @@ makefile:
   enabled: false
 
 renovate:
-  enabled: true
+  enabled: false
   assignees:
     - kengou
     - abhijith-darshan
