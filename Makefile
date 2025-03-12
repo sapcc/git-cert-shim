@@ -20,6 +20,7 @@ GINKGOLINTER_VERSION ?= 0.19.1
 CONTROLLER_GEN_VERSION ?= 0.16.5
 
 all: build
+build-all: build
 
 # Run tests
 test: generate fmt vet manifests
