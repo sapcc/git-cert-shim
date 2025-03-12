@@ -3,10 +3,12 @@ version: 2
 
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}'
-    format: .tar.gz
+    formats: [
+      'tar.gz'
+    ]
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [ 'zip' ]
     files:
       - CHANGELOG.md
       - LICENSE
