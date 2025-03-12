@@ -39,7 +39,6 @@ RUN mkdir -p /root/.ssh
 
 # Install SAP CA certificate.
 RUN wget -O /usr/local/share/ca-certificates/SAP_Global_Root_CA.crt http://aia.pki.co.sap.com/aia/SAP%20Global%20Root%20CA.crt && update-ca-certificates
-RUN ssh-keyscan github.wdf.sap.corp >> /root/.ssh/known_hosts
 RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
 COPY --from=builder /workspace/bin/git-cert-shim .
