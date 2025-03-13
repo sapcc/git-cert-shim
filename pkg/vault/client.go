@@ -13,11 +13,14 @@ import (
 	"time"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	"github.com/go-logr/logr"
 	vaultapi "github.com/hashicorp/vault/api"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 type Options struct {
 	PushCertificates bool
+	UpdateMetaData   bool
 	KVEngineName     string
 	authRoleID       string
 	authSecretID     string
@@ -26,6 +29,7 @@ type Options struct {
 type Client struct {
 	client  *vaultapi.Client
 	Options Options
+	Log     logr.Logger
 
 	authMutex      sync.Mutex
 	authValidUntil time.Time
@@ -33,9 +37,6 @@ type Client struct {
 
 // Returns (nil, nil) if Vault support is not selected through the respective CLI options.
 func NewClientIfSelected(opts Options) (*Client, error) {
-	if !opts.PushCertificates {
-		return nil, nil
-	}
 	if opts.KVEngineName == "" {
 		return nil, errors.New("no value given for --vault-kv-engine")
 	}
@@ -63,6 +64,7 @@ func NewClientIfSelected(opts Options) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	c.Log = ctrl.Log.WithName("vaultClient").WithName("controllers").WithName("git")
 	return c, nil
 }
 
@@ -125,11 +127,19 @@ func (c *Client) UpdateCertificate(data CertificateData, certStatus certmanagerv
 	}
 
 	if needsWrite || secretMeta.CustomMetadata["expiry_date"] != fmt.Sprintf("%d-%02d-%02d", certStatus.NotAfter.Year(), certStatus.NotAfter.Month(), certStatus.NotAfter.Day()) {
-		_, err := c.client.Logical().Write(fullSecretPath, map[string]interface{}{"data": payload})
-		if err != nil {
-			return fmt.Errorf("while writing payload to vault: %w", err)
+		if c.Options.PushCertificates {
+			_, err := c.client.Logical().Write(fullSecretPath, map[string]interface{}{"data": payload})
+			if err != nil {
+				return fmt.Errorf("while writing payload to vault: %w", err)
+			}
+		} else {
+			c.Log.Info("skipping writing to vault", "path", fullSecretPath)
 		}
-		err = c.patchMetadata(data.VaultPath, certStatus)
+		if c.Options.UpdateMetaData {
+			err = c.patchMetadata(data.VaultPath, certStatus)
+		} else {
+			c.Log.Info("skipping updated metadata", "path", fullSecretPath, "vaultMetaData", secretMeta.CustomMetadata, "secretMetaData", certStatus)
+		}
 		return err
 	}
 
