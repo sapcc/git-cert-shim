@@ -76,6 +76,7 @@ func main() {
 	flag.BoolVar(&gitOpts.DryRun, "dry-run", false, "Write certificates into local Git clone, but do not push them.")
 
 	flag.BoolVar(&vaultOpts.PushCertificates, "vault-push-certs", false, "Whether to write certificates into a Vault KV engine. If set to true, Vault credentials must be given in environment variables (VAULT_ADDR and VAULT_ROLE_ID+VAULT_SECRET_ID for approle auth.)")
+	flag.BoolVar(&vaultOpts.UpdateMetaData, "vault-update-metadata", false, "Whether to update the metadata of the certificate in Vault.")
 	flag.StringVar(&vaultOpts.KVEngineName, "vault-kv-engine", "secrets", "Name of KV engine where certificates will be stored in Vault.")
 
 	flag.StringVar(&controllerOpts.Namespace, "namespace", "kube-system", "The namespace in which certificate request will be created. Is overwritten by the namespace this controller runs in.")

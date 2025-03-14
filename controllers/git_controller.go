@@ -153,7 +153,7 @@ func (g *GitController) checkCertificate(cert *certificate.Certificate) error {
 		return err
 	}
 
-	if g.VaultClient != nil && g.VaultClient.Options.PushCertificates {
+	if g.VaultClient != nil {
 		err := g.VaultClient.UpdateCertificate(vault.CertificateData{
 			VaultPath: cert.VaultPath,
 			CertBytes: certByte,
