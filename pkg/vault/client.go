@@ -112,10 +112,7 @@ func (c *Client) UpdateCertificate(data CertificateData, certStatus certmanagerv
 	// we only want to write the secret and therefore produce a new version when actually necessary
 	secret, err := c.client.Logical().Read(fullSecretPath)
 	if err != nil {
-		return err
-	}
-	secretMeta, err := c.client.KVv2(c.Options.KVEngineName).GetMetadata(context.TODO(), data.VaultPath)
-	if err != nil {
+		c.Log.Error(err, "failed to read secret", "path", fullSecretPath)
 		return err
 	}
 
@@ -126,21 +123,33 @@ func (c *Client) UpdateCertificate(data CertificateData, certStatus certmanagerv
 		needsWrite = !reflect.DeepEqual(secret.Data["data"], payload)
 	}
 
-	if needsWrite || secretMeta.CustomMetadata["expiry_date"] != fmt.Sprintf("%d-%02d-%02d", certStatus.NotAfter.Year(), certStatus.NotAfter.Month(), certStatus.NotAfter.Day()) {
-		if c.Options.PushCertificates {
-			_, err := c.client.Logical().Write(fullSecretPath, map[string]interface{}{"data": payload})
-			if err != nil {
-				return fmt.Errorf("while writing payload to vault: %w", err)
-			}
-		} else {
-			c.Log.Info("skipping writing to vault", "path", fullSecretPath)
+	if needsWrite && c.Options.PushCertificates {
+		_, err := c.client.Logical().Write(fullSecretPath, map[string]interface{}{"data": payload})
+		if err != nil {
+			return fmt.Errorf("while writing payload to vault: %w", err)
 		}
-		if c.Options.UpdateMetaData {
-			err = c.patchMetadata(data.VaultPath, certStatus)
-		} else {
-			c.Log.Info("skipping updated metadata", "path", fullSecretPath, "vaultMetaData", secretMeta.CustomMetadata, "secretMetaData", certStatus)
+
+		err = c.patchMetadata(data.VaultPath, certStatus)
+		if err != nil {
+			return fmt.Errorf("while updating metadata: %w", err)
 		}
+	} else {
+		c.Log.Info("skipping writing to vault", "path", fullSecretPath)
+	}
+
+	secretMeta, err := c.client.KVv2(c.Options.KVEngineName).GetMetadata(context.TODO(), data.VaultPath)
+	if err != nil {
+		c.Log.Error(err, "failed to read secret metadata", "path", fullSecretPath)
 		return err
+	}
+
+	if c.Options.UpdateMetaData && secretMeta.CustomMetadata["expiry_date"] != fmt.Sprintf("%d-%02d-%02d", certStatus.NotAfter.Year(), certStatus.NotAfter.Month(), certStatus.NotAfter.Day()) {
+		err = c.patchMetadata(data.VaultPath, certStatus)
+		if err != nil {
+			return fmt.Errorf("while updating metadata: %w", err)
+		}
+	} else {
+		c.Log.Info("skipping updated metadata", "path", fullSecretPath, "vaultMetaData", secretMeta.CustomMetadata, "secretMetaData", certStatus)
 	}
 
 	return nil
