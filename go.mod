@@ -2,7 +2,7 @@ module github.com/sapcc/git-cert-shim
 
 go 1.23.7
 
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.32.2
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.32.3
 
 require (
 	github.com/cert-manager/cert-manager v1.17.1
