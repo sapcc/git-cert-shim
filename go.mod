@@ -1,11 +1,13 @@
 module github.com/sapcc/git-cert-shim
 
-go 1.23.7
+go 1.23.8
+
+toolchain go1.23.9
 
 replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.32.3
 
 require (
-	github.com/cert-manager/cert-manager v1.17.1
+	github.com/cert-manager/cert-manager v1.17.2
 	github.com/go-logr/logr v1.4.2
 	github.com/hashicorp/vault/api v1.16.0
 	github.com/onsi/ginkgo/v2 v2.23.0
@@ -69,7 +71,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.28.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
