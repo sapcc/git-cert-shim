@@ -17,7 +17,7 @@ const (
 )
 
 func ExtractCAAndCertificateAndPrivateKeyFromSecret(tlsSecret *corev1.Secret) (ca, cert, key []byte, err error) {
-	//nolint:gosimple
+	//nolint:staticcheck
 	if tlsSecret.Data == nil || len(tlsSecret.Data) == 0 {
 		return nil, nil, nil, errors.New("secret is empty")
 	}
