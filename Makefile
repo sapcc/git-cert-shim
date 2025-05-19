@@ -15,7 +15,7 @@ $(LOCALBIN):
 ## Tool Binaries
 GOLINT ?= $(LOCALBIN)/golangci-lint
 ## Tool Versions
-GOLINT_VERSION ?= 1.64.8
+GOLINT_VERSION ?= 2.1.6
 GINKGOLINTER_VERSION ?= 0.19.1
 CONTROLLER_GEN_VERSION ?= 0.16.5
 
@@ -115,7 +115,7 @@ lint: golint
 .PHONY: golint
 golint: $(GOLINT)
 $(GOLINT): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v$(GOLINT_VERSION)
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v$(GOLINT_VERSION)
 	GOBIN=$(LOCALBIN) go install github.com/nunnatsa/ginkgolinter/cmd/ginkgolinter@v$(GINKGOLINTER_VERSION)
 
 install-addlicense:
