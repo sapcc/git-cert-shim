@@ -1,3 +1,16 @@
+## v2.1.9 
+
+- Bump go to 1.24
+- Bump k8s.io/api to v0.32.4	
+- Bump k8s.io/apiextensions-apiserver to v0.32.4	
+- Bump k8s.io/apimachinery to v0.32.5	
+- Bump k8s.io/client-go to v0.32.4	
+- Bump sigs.k8s.io/controller-runtime to v0.20.4
+- Bump github.com/prometheus/client_golang to v1.22.0
+- Bump cert-manager to v1.17.2
+- Bump ginkgo to  v2.23.4
+- Bump gomega to v1.36.3
+
 ## v2.1.8 - 2025-03-24
 
 - Bump cert-amaneger to v1.17.1
