@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: SAP SE or an SAP affiliate company
+# SPDX-License-Identifier: Apache-2.0
+version = 1
+SPDX-PackageName = "git-cert-shim"
+SPDX-PackageDownloadLocation = "https://github.com/sapcc/git-cert-shim"
+
+[[annotations]]
+path = [
+  ".github/CODEOWNERS",
+  ".github/renovate.json",
+  ".gitignore",
+  ".license-scan-overrides.jsonl",
+  ".license-scan-rules.json",
+  "go.mod",
+  "go.sum",
+  "Makefile.maker.yaml",
+  "vendor/modules.txt",
+]
+SPDX-FileCopyrightText = "SAP SE or an SAP affiliate company"
+SPDX-License-Identifier = "Apache-2.0"

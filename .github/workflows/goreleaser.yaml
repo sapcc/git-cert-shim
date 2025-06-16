@@ -3,7 +3,7 @@
 # Edit Makefile.maker.yaml instead.                                            #
 ################################################################################
 
-# Copyright 2024 SAP SE
+# SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company
 # SPDX-License-Identifier: Apache-2.0
 
 name: goreleaser
@@ -20,21 +20,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
+        uses: actions/setup-go@v5
         with:
           check-latest: true
-          go-version: 1.24.3
+          go-version: 1.24.0
       - name: Generate release info
         run: |
           go install github.com/sapcc/go-bits/tools/release-info@latest
           mkdir -p build
           release-info CHANGELOG.md "$(git describe --tags --abbrev=0)" > build/release-info
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552 # v6
+        uses: goreleaser/goreleaser-action@v6
         with:
           args: release --clean --release-notes=./build/release-info
           version: latest
