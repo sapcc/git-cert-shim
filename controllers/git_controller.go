@@ -42,7 +42,7 @@ type GitController struct {
 	client            client.Client
 	scheme            *runtime.Scheme
 	repositorySyncer  *git.RepositorySyncer
-	queue             workqueue.TypedRateLimitingInterface[interface{}]
+	queue             workqueue.TypedRateLimitingInterface[any]
 	wg                sync.WaitGroup
 	mtx               sync.Mutex
 }
@@ -89,7 +89,7 @@ func (g *GitController) processNextWorkItem() bool {
 		return false
 	}
 
-	err := func(obj interface{}) error {
+	err := func(obj any) error {
 		defer g.queue.Done(obj)
 
 		c, ok := obj.(*certificate.Certificate)
@@ -245,7 +245,7 @@ func (g *GitController) SetupWithManager(mgr ctrl.Manager) error {
 
 	g.scheme = mgr.GetScheme()
 	g.client = mgr.GetClient()
-	g.queue = workqueue.NewTypedRateLimitingQueue(workqueue.NewTypedItemExponentialFailureRateLimiter[interface{}](30*time.Second, 600*time.Second))
+	g.queue = workqueue.NewTypedRateLimitingQueue(workqueue.NewTypedItemExponentialFailureRateLimiter[any](30*time.Second, 600*time.Second))
 	g.ControllerOptions.Namespace = util.GetEnv("NAMESPACE", g.ControllerOptions.Namespace)
 
 	if err := mgr.Add(g); err != nil {
