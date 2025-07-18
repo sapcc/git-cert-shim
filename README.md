@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # git-cert-shim
 
 The git-cert-shim extends the [cert-manager](https://github.com/jetstack/cert-manager) and enables 
