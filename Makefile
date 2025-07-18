@@ -53,7 +53,7 @@ install-controller-gen: FORCE
 install-setup-envtest: FORCE
 	@if ! hash setup-envtest 2>/dev/null; then printf "\e[1;36m>> Installing setup-envtest (this may take a while)...\e[0m\n"; go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest; fi
 
-GO_BUILDFLAGS =
+GO_BUILDFLAGS = -mod vendor
 GO_LDFLAGS =
 GO_TESTENV =
 GO_BUILDENV =
@@ -91,7 +91,7 @@ check: FORCE static-check build/cover.html build-all
 
 generate: install-controller-gen
 	@printf "\e[1;36m>> controller-gen\e[0m\n"
-	@controller-gen crd rbac:roleName=git-cert-shim webhook paths="./..." output:crd:artifacts:config=crd
+	@controller-gen crd rbac:roleName=git-cert-shim-role webhook paths="./..." output:crd:artifacts:config=crd
 	@controller-gen object paths="./..."
 
 run-golangci-lint: FORCE install-golangci-lint
@@ -105,11 +105,11 @@ run-modernize: FORCE install-modernize
 
 run-shellcheck: FORCE install-shellcheck
 	@printf "\e[1;36m>> shellcheck\e[0m\n"
-	@find .  -type f \( -name '*.bash' -o -name '*.ksh' -o -name '*.zsh' -o -name '*.sh' -o -name '*.shlib' \) -exec shellcheck  {} +
+	@find . ! -path './vendor/**' -type f \( -name '*.bash' -o -name '*.ksh' -o -name '*.zsh' -o -name '*.sh' -o -name '*.shlib' \) -exec shellcheck  {} +
 
 build/cover.out: FORCE install-ginkgo generate install-setup-envtest | build
 	@printf "\e[1;36m>> Running tests\e[0m\n"
-	KUBEBUILDER_ASSETS=$$(setup-envtest use 1.32 -p path) ginkgo run --randomize-all -output-dir=build $(GO_BUILDFLAGS) -ldflags '-s -w $(GO_LDFLAGS)' -covermode=count -coverpkg=$(subst $(space),$(comma),$(GO_COVERPKGS)) $(GO_TESTPKGS)
+	KUBEBUILDER_ASSETS=$$(setup-envtest use 1.33 -p path) ginkgo run --randomize-all -output-dir=build $(GO_BUILDFLAGS) -ldflags '-s -w $(GO_LDFLAGS)' -covermode=count -coverpkg=$(subst $(space),$(comma),$(GO_COVERPKGS)) $(GO_TESTPKGS)
 	@mv build/coverprofile.out build/cover.out
 
 build/cover.html: build/cover.out
@@ -134,8 +134,14 @@ static-check: FORCE
 build:
 	@mkdir $@
 
-tidy-deps: FORCE
+vendor: FORCE
 	go mod tidy
+	go mod vendor
+	go mod verify
+
+vendor-compat: FORCE
+	go mod tidy -compat=$(shell awk '$$1 == "go" { print $$2 }' < go.mod)
+	go mod vendor
 	go mod verify
 
 license-headers: FORCE install-addlicense
@@ -214,7 +220,8 @@ help: FORCE
 	@printf "  \e[36mstatic-check\e[0m                 Run static code checks\n"
 	@printf "\n"
 	@printf "\e[1mDevelopment\e[0m\n"
-	@printf "  \e[36mtidy-deps\e[0m                    Run go mod tidy and go mod verify.\n"
+	@printf "  \e[36mvendor\e[0m                       Run go mod tidy, go mod verify, and go mod vendor.\n"
+	@printf "  \e[36mvendor-compat\e[0m                Same as 'make vendor' but go mod tidy will use '-compat' flag with the Go version from go.mod file as value.\n"
 	@printf "  \e[36mlicense-headers\e[0m              Add (or overwrite) license headers on all non-vendored source code files.\n"
 	@printf "  \e[36mcheck-dependency-licenses\e[0m    Check all dependency licenses using go-licence-detector.\n"
 	@printf "  \e[36mgoimports\e[0m                    Run goimports on all non-vendored .go files\n"

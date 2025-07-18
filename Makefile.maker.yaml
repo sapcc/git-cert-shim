@@ -8,6 +8,9 @@ binaries:
     fromPackage: ./cmd/git-cert-shim
     installTo:   bin/
 
+controllerGen:
+  rbacRoleName: git-cert-shim-role
+
 dockerfile:
   enabled: false
 
@@ -48,6 +51,7 @@ reuse:
       - PROJECT
       - VERSION
       - hack/boilerplate.go.txt
+      - config/**
       SPDX-FileCopyrightText: SAP SE or an SAP affiliate company
       SPDX-License-Identifier: Apache-2.0
 
