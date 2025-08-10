@@ -5,7 +5,7 @@ go 1.24.0
 replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.32.4
 
 require (
-	github.com/cert-manager/cert-manager v1.17.2
+	github.com/cert-manager/cert-manager v1.17.4
 	github.com/go-logr/logr v1.4.2
 	github.com/hashicorp/vault/api v1.20.0
 	github.com/onsi/ginkgo/v2 v2.23.4
