@@ -143,6 +143,14 @@ SPDX-License-Identifier = "MIT"
 
 [[annotations]]
 path = [
+  "vendor/github.com/blang/semver/v4/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Other"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [
   "vendor/github.com/cenkalti/backoff/v4/**",
 ]
 precedence = "aggregate"
