@@ -8,7 +8,7 @@
 
 version: "2"
 run:
-  modules-download-mode: vendor
+  modules-download-mode: readonly
   timeout: 3m0s # none by default in v2
 
 formatters:

@@ -16,6 +16,7 @@ dockerfile:
 
 golang:
   setGoModVersion: true
+  enableVendoring: false
 
 golangciLint:
   createConfig: true
