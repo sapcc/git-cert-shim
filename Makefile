@@ -15,7 +15,7 @@ $(LOCALBIN):
 ## Tool Binaries
 GOLINT ?= $(LOCALBIN)/golangci-lint
 ## Tool Versions
-GOLINT_VERSION ?= 2.1.6
+GOLINT_VERSION ?= 2.4.0
 GINKGOLINTER_VERSION ?= 0.19.1
 CONTROLLER_GEN_VERSION ?= 0.16.5
 
