@@ -8,14 +8,18 @@ binaries:
     fromPackage: ./cmd/git-cert-shim
     installTo:   bin/
 
+controllerGen:
+  rbacRoleName: git-cert-shim-role
+
 dockerfile:
   enabled: false
 
 golang:
-  setGoModVersion: false
+  setGoModVersion: true
+  enableVendoring: false
 
 golangciLint:
-  createConfig: false
+  createConfig: true
 
 goReleaser:
   createConfig: true
@@ -42,8 +46,15 @@ githubWorkflow:
   release:
     enabled: true
 
-makefile:
-  enabled: false
+reuse:
+  annotations:
+    - paths:
+      - PROJECT
+      - VERSION
+      - hack/boilerplate.go.txt
+      - config/**
+      SPDX-FileCopyrightText: SAP SE or an SAP affiliate company
+      SPDX-License-Identifier: Apache-2.0
 
 renovate:
   enabled: false
