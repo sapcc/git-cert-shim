@@ -23,12 +23,12 @@ COPY go.sum go.sum
 RUN go mod download
 
 # Copy the go source.
-COPY main.go main.go
+COPY cmd/git-cert-shim/ cmd/git-cert-shim/
 COPY controllers/ controllers/
 COPY pkg/ pkg/
 
 # Build the controller.
-RUN make build CGO_ENABLED=0
+RUN make build/git-cert-shim CGO_ENABLED=0
 
 FROM --platform=${BUILDPLATFORM:-linux/amd64} alpine:3.22
 LABEL source_repository="https://github.com/sapcc/git-cert-shim"
@@ -46,6 +46,6 @@ RUN wget -O /usr/local/share/ca-certificates/SAP_Global_Root_CA.crt http://aia.p
 RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 RUN echo "UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config
 
-COPY --from=builder /workspace/bin/git-cert-shim .
+COPY --from=builder /workspace/build/git-cert-shim .
 RUN ["/git-cert-shim", "--version"]
 ENTRYPOINT ["/git-cert-shim"]
