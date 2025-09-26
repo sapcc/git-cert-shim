@@ -57,7 +57,7 @@ reuse:
       SPDX-License-Identifier: Apache-2.0
 
 renovate:
-  enabled: false
+  enabled: true
   assignees:
     - kengou
     - abhijith-darshan

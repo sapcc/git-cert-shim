@@ -2,62 +2,71 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    "helpers:pinGitHubActionDigests"
+    "default:pinDigestsDisabled",
+    "mergeConfidence:all-badges",
+    "docker:disable"
   ],
   "assignees": [
     "kengou",
     "abhijith-darshan"
   ],
+  "commitMessageAction": "Renovate: Update",
   "constraints": {
-    "go": "1.24"
+    "go": "1.25"
   },
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "osvVulnerabilityAlerts": true,
-  "customManagers": [
-    {
-      "customType": "regex",
-      "description": "Bump controller tools version in the Makefile",
-      "managerFilePatterns": [
-        "/^Makefile$/"
-      ],
-      "matchStrings": [
-        "CONTROLLER_TOOLS_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
-      ],
-      "datasourceTemplate": "github-tags",
-      "depNameTemplate": "kubernetes-sigs/controller-tools",
-      "extractVersionTemplate": "^v(?<version>.*)$"
-    },
-    {
-      "customType": "regex",
-      "description": "Bump golangci-lint version in the Makefile",
-      "managerFilePatterns": [
-        "/^Makefile$/"
-      ],
-      "matchStrings": [
-        "GOLINT_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
-      ],
-      "datasourceTemplate": "github-tags",
-      "depNameTemplate": "golangci/golangci-lint",
-      "extractVersionTemplate": "^v(?<version>.*)$"
-    },
-    {
-      "customType": "regex",
-      "description": "Bump ginkolinter version in the Makefile",
-      "managerFilePatterns": [
-        "/^Makefile$/"
-      ],
-      "matchStrings": [
-        "GINKGOLINTER_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
-      ],
-      "datasourceTemplate": "github-tags",
-      "depNameTemplate": "nunnatsa/ginkgolinter",
-      "extractVersionTemplate": "^v(?<version>.*)$"
-    }
+  "postUpdateOptions": [
+    "gomodTidy",
+    "gomodUpdateImportPaths"
   ],
   "packageRules": [
     {
-      "groupName": "github actions",
-      "matchManagers": [
+      "matchPackageNames": [
+        "/.*/"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "External dependencies"
+    },
+    {
+      "matchPackageNames": [
+        "/^github\\.com\\/sapcc\\/.*/"
+      ],
+      "automerge": true,
+      "groupName": "github.com/sapcc"
+    },
+    {
+      "matchPackageNames": [
+        "go",
+        "golang",
+        "actions/go-versions"
+      ],
+      "groupName": "golang",
+      "separateMinorPatch": true
+    },
+    {
+      "matchPackageNames": [
+        "go",
+        "golang",
+        "actions/go-versions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "major"
+      ],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "matchPackageNames": [
+        "/^k8s.io\\//"
+      ],
+      "allowedVersions": "0.28.x"
+    },
+    {
+      "matchPackageNames": [
         "github-actions"
       ],
       "matchUpdateTypes": [
@@ -68,65 +77,54 @@
       "extends": [
         "helpers:pinGitHubActionDigests"
       ],
+      "groupName": "github actions",
       "minimumReleaseAge": "14 days"
-    },
+    }
+  ],
+  "customManagers": [
     {
-      "groupName": "golang",
-      "matchDatasources": [
-        "docker",
-        "go-version"
+      "customType": "regex",
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "kubernetes-sigs/controller-tools",
+      "description": "Bump controller tools version in the Makefile",
+      "extractVersionTemplate": "^v(?<version>.*)$",
+      "fileMatch": [
+        "^Makefile$"
       ],
-      "minimumReleaseAge": "14 days",
-      "matchPackageNames": [
-        "/golang/"
+      "matchStrings": [
+        "CONTROLLER_TOOLS_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
       ]
     },
     {
-      "groupName": "kubernetes packages",
-      "groupSlug": "kubernetes-go",
-      "matchDatasources": [
-        "go"
+      "customType": "regex",
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "golangci/golangci-lint",
+      "description": "Bump golangci-lint version in the Makefile",
+      "extractVersionTemplate": "^v(?<version>.*)$",
+      "fileMatch": [
+        "^Makefile$"
       ],
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch"
+      "matchStrings": [
+        "GOLINT_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
+      ]
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "nunnatsa/ginkgolinter",
+      "description": "Bump ginkolinter version in the Makefile",
+      "extractVersionTemplate": "^v(?<version>.*)$",
+      "fileMatch": [
+        "^Makefile$"
       ],
-      "minimumReleaseAge": "14 days",
-      "matchPackageNames": [
-        "k8s.io/api{/,}**",
-        "k8s.io/apiextensions-apiserver{/,}**",
-        "k8s.io/apimachinery{/,}**",
-        "k8s.io/apiserver{/,}**",
-        "k8s.io/cli-runtime{/,}**",
-        "k8s.io/client-go{/,}**",
-        "k8s.io/cloud-provider{/,}**",
-        "k8s.io/cluster-bootstrap{/,}**",
-        "k8s.io/code-generator{/,}**",
-        "k8s.io/component-base{/,}**",
-        "k8s.io/controller-manager{/,}**",
-        "k8s.io/cri-api{/,}**",
-        "k8s.io/csi-translation-lib{/,}**",
-        "k8s.io/kube-aggregator{/,}**",
-        "k8s.io/kube-controller-manager{/,}**",
-        "k8s.io/kube-proxy{/,}**",
-        "k8s.io/kube-scheduler{/,}**",
-        "k8s.io/kubectl{/,}**",
-        "k8s.io/kubelet{/,}**",
-        "k8s.io/legacy-cloud-providers{/,}**",
-        "k8s.io/metrics{/,}**",
-        "k8s.io/mount-utils{/,}**",
-        "k8s.io/pod-security-admission{/,}**",
-        "k8s.io/sample-apiserver{/,}**",
-        "k8s.io/sample-cli-plugin{/,}**",
-        "k8s.io/sample-controller{/,}**",
-        "sigs.k8s.io/controller-runtime{/,}**"
+      "matchStrings": [
+        "GINKGOLINTER_VERSION\\s*\\?=\\s*(?<currentValue>.?(?:\\d+\\.){0,2}\\d+)"
       ]
     }
   ],
-  "postUpdateOptions": [
-    "gomodTidy",
-    "gomodUpdateImportPaths"
+  "prHourlyLimit": 0,
+  "schedule": [
+    "before 8am on Friday"
   ],
-  "separateMinorPatch": true
+  "semanticCommits": "disabled"
 }
