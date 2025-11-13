@@ -3,7 +3,7 @@ module github.com/sapcc/git-cert-shim
 go 1.25
 
 require (
-	github.com/cert-manager/cert-manager v1.18.2
+	github.com/cert-manager/cert-manager v1.18.3
 	github.com/go-logr/logr v1.4.3
 	github.com/hashicorp/vault/api v1.20.0
 	github.com/onsi/ginkgo/v2 v2.23.4
