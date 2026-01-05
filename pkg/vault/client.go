@@ -78,7 +78,7 @@ func (c *Client) authenticateIfNecessary() error {
 	}
 
 	// perform approle authentication
-	resp, err := c.client.Logical().Write("auth/approle/login", map[string]interface{}{
+	resp, err := c.client.Logical().Write("auth/approle/login", map[string]any{
 		"role_id":   c.Options.authRoleID,
 		"secret_id": c.Options.authSecretID,
 	})
@@ -104,7 +104,7 @@ func (c *Client) UpdateCertificate(data CertificateData, certStatus certmanagerv
 	}
 
 	fullSecretPath := c.secretPath(data.VaultPath)
-	payload := map[string]interface{}{ // this exact type is necessary because we do reflect.DeepEqual() below!
+	payload := map[string]any{ // this exact type is necessary because we do reflect.DeepEqual() below!
 		"certificate": string(data.CertBytes),
 		"private-key": string(data.KeyBytes),
 	}
@@ -124,7 +124,7 @@ func (c *Client) UpdateCertificate(data CertificateData, certStatus certmanagerv
 	}
 
 	if needsWrite && c.Options.PushCertificates {
-		_, err := c.client.Logical().Write(fullSecretPath, map[string]interface{}{"data": payload})
+		_, err := c.client.Logical().Write(fullSecretPath, map[string]any{"data": payload})
 		if err != nil {
 			return fmt.Errorf("while writing payload to vault: %w", err)
 		}
@@ -156,7 +156,7 @@ func (c *Client) UpdateCertificate(data CertificateData, certStatus certmanagerv
 }
 
 func (c *Client) patchMetadata(vaultPath string, certStatus certmanagerv1.CertificateStatus) error {
-	customMetadata := map[string]interface{}{
+	customMetadata := map[string]any{
 		"accessed_resource":       c.client.Address(),
 		"application_criticality": "high",
 		"expiry_date":             fmt.Sprintf("%d-%02d-%02d", certStatus.NotAfter.Year(), certStatus.NotAfter.Month(), certStatus.NotAfter.Day()),

@@ -64,7 +64,7 @@ func ReadCertificateConfig(filePath string) ([]*Certificate, error) {
 
 		// Calculate where to store the certificate and key in Vault.
 		var buf bytes.Buffer
-		err = vaultPathTpl.Execute(&buf, map[string]interface{}{
+		err = vaultPathTpl.Execute(&buf, map[string]any{
 			"PathSafeCommonName": strings.ReplaceAll(c.CommonName, "*", "wildcard"),
 		})
 		if err != nil {
