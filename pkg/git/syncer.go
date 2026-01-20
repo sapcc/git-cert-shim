@@ -138,6 +138,7 @@ func (r *RepositorySyncer) syncWithRetry() error {
 			}
 
 			if err := r.gitCli.PullRebase(); err != nil {
+				r.logger.V(1).Error(err, "Pull rebase failed")
 				gitSyncErrorTotal.WithLabelValues("pull").Inc()
 				return err
 			}
@@ -158,6 +159,7 @@ func (r *RepositorySyncer) syncWithRetry() error {
 				r.logger.V(1).Info("Pushing changes to repository.")
 				if err := r.gitCli.Push(); err != nil {
 					gitSyncErrorTotal.WithLabelValues("push").Inc()
+					r.logger.V(1).Error(err, "Pushing changes failed")
 					return err
 				}
 			}
