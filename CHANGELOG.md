@@ -4,8 +4,12 @@ SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company
 SPDX-License-Identifier: Apache-2.0
 -->
 
-## v2.1.9 
+## v2.2.0 - 2025-01-20
 
+- Fix suppress error if no rebase in progress
+- Fix go-makefile-maker config
+- Bump github.com/onci/gomega to v1.37.0
+- Bump github.com/hashicorp/vault/api to v1.20.0
 - Bump go to 1.24
 - Bump k8s.io/api to v0.32.4	
 - Bump k8s.io/apiextensions-apiserver to v0.32.4	
