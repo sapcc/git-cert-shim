@@ -4,6 +4,10 @@ SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company
 SPDX-License-Identifier: Apache-2.0
 -->
 
+## v2.2.1 - 2025-01-20
+
+- Fix suppress any errors on git rebase --abort
+
 ## v2.2.0 - 2025-01-20
 
 - Fix suppress error if no rebase in progress

@@ -67,14 +67,8 @@ func (g *Git) GetRemoteHEADCommitHash() (string, error) {
 
 // PullRebase pulls and rebases.
 func (g *Git) PullRebase() error {
-	_, err := g.run("rebase", "--abort")
-	if err != nil {
-		// ignore error if there is no rebase in progress
-		if !strings.Contains(err.Error(), "no rebase in progress") {
-			return errors.Wrap(err, "git rebase --abort failed")
-		}
-	}
-	_, err = g.run(
+	_, _ = g.run("rebase", "--abort") //nolint:errcheck
+	_, err := g.run(
 		"-c", fmt.Sprintf(`user.name="%s"`, g.AuthorName),
 		"-c", fmt.Sprintf(`user.email="%s"`, g.AuthorEmail),
 		"pull",
