@@ -13,7 +13,7 @@ import (
 type ControllerOptions struct {
 	ConfigFileName,
 	Namespace string
-	DefaultIssuer           cmmeta.ObjectReference
+	DefaultIssuer           cmmeta.IssuerReference
 	RenewCertificatesBefore time.Duration
 }
 
