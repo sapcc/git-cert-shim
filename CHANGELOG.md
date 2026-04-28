@@ -3,6 +3,11 @@ SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company
 
 SPDX-License-Identifier: Apache-2.0
 -->
+
+## v2.3.1 - 2025-04-28
+
+- fix: bump dockerfile to go1.26
+
 ## v2.3.0 - 2025-04-28
 
 - Renovate: Update module github.com/cert-manager/cert-manager to v1.18.5 [SECURITY]
