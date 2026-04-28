@@ -3,6 +3,22 @@ SPDX-FileCopyrightText: 2025 SAP SE or an SAP affiliate company
 
 SPDX-License-Identifier: Apache-2.0
 -->
+## v2.3.0 - 2025-04-28
+
+- Renovate: Update module github.com/cert-manager/cert-manager to v1.18.5 [SECURITY]
+- bump github.com/cert-manager/cert-manager to v1.20.2
+- bump github.com/go-logr/logr to v1.4.3
+- bump github.com/hashicorp/vault/api to v1.23.0
+- bump github.com/onsi/ginkgo/v2 to v2.28.2
+- bump github.com/onsi/gomega to v1.39.1
+- bump github.com/pkg/errors to v0.9.1
+- bump github.com/prometheus/client_golang to v1.23.2
+- bump go.uber.org/zap to v1.28.0
+- bump gopkg.in/yaml.v3 to v3.0.1
+- bump k8s.io/api to v0.35.2
+- bump k8s.io/apimachinery to v0.35.2
+- bump k8s.io/client-go to v0.35.2
+- bump sigs.k8s.io/controller-runtime to v0.23.3
 
 ## v2.2.1 - 2025-01-20
 
