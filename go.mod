@@ -1,6 +1,6 @@
 module github.com/sapcc/git-cert-shim
 
-go 1.26
+go 1.27
 
 require (
 	github.com/cert-manager/cert-manager v1.20.2
