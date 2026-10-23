@@ -25,4 +25,4 @@ secretGenerator:
 images:
 - name: git-cert-shim
   newName: ghcr.io/sapcc/git-cert-shim
-  newTag: v2.2.1
+  newTag: v2.2.1@sha256:df140f950af3fe06a6e0c20c59bc6879b549bfb17661dd69e883aa52879fdcfd
