@@ -30,7 +30,7 @@ COPY pkg/ pkg/
 # Build the controller.
 RUN make build/git-cert-shim CGO_ENABLED=0
 
-FROM --platform=${BUILDPLATFORM:-linux/amd64} alpine:3.22
+FROM --platform=${BUILDPLATFORM:-linux/amd64} alpine:3.22@sha256:2e0b81d60597f449baa56dc25d355367869d2dca4cd57e866f1e2b52af3eb55f
 LABEL source_repository="https://github.com/sapcc/git-cert-shim"
 
 WORKDIR /
