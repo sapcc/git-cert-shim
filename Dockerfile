@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Build the manager binary
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.26-alpine AS builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.27-alpine@sha256:eb61c3873c97416fff0116553fff65d67a3549f72e11d9758849a689cdd8b523 AS builder
 
 WORKDIR /workspace
 
